@@ -30,11 +30,6 @@ current implementation status.
 | `skills/<category>/<name>/SKILL.md` | Instructions for executing that skill, including its inputs, boundaries and completion conditions. |
 | `docs/<category>/README.md` | The workflow map, entry choices and which stages are implemented. |
 | `docs/<category>/<name>.md` | How a person uses one skill, recognizes a good run, and handles known limitations. |
-| Local `prd.md`, when present | Private design history and decision rationale. It is gitignored and is not required to understand the published workflow. |
-
-The source repository's local `prd.md` and a target project's topic PRD serve
-different purposes. The former records decisions about this skill collection;
-the latter is an input artifact for a particular piece of planned work.
 
 Once `to-spec` publishes a topic's specification, the issue is the maintained
 record and that topic PRD is expected to become stale. The human-facing skill
