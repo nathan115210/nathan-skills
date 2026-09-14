@@ -29,6 +29,7 @@ skills/
 scripts/
   relink.sh          links every skill into all three tools
   test_relink.py     isolated tests for the above
+.changeset/          pending changes for the next release
 docs/
   development/       how to use the workflow: one page per skill, plus an overview
 ```
@@ -71,6 +72,28 @@ questions it raises in use, and what it does not do.
   chained inside one session.
 - `AGENTS.md` is the real file; `CLAUDE.md` and `GEMINI.md` are symlinks to it,
   so the operating rules cannot drift between tools.
+- Every change a tool runs ships with a changeset — see below.
+
+## Versioning
+
+The repository is versioned as a whole with
+[changesets](https://github.com/changesets/changesets); nothing is published to
+npm. A change that a tool runs comes with a note describing it:
+
+```bash
+npm install          # once, for the changesets CLI
+npm run changeset    # describe the change, pick patch / minor / major
+```
+
+Commit the generated file in `.changeset/` with the change. On merge to
+`master`, the `Release` workflow opens a **chore: version skills** pull request
+carrying the version bump and the new [`CHANGELOG.md`](./CHANGELOG.md) entry;
+merging it tags the release.
+
+Bump for the effect on someone whose tools already link to this repo: **patch**
+for wording and fixes, **minor** for a new skill or changed inputs and outcomes,
+**major** for anything that breaks an existing setup — a rename, a removed
+skill, or a relink that has to be re-run.
 
 ## Not managed here
 

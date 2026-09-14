@@ -19,6 +19,8 @@ current implementation status.
 | Issue | A GitHub work item. A spec issue can later have sub-issues; it is not declared a parent merely because it contains a spec. |
 | Seam | A boundary at which a test can observe behaviour. `to-spec` proposes the seams for the whole spec and obtains the user's confirmation. |
 | Verification evidence | Actual commands, outputs and observed artifacts for a stated environment and scenario. Evidence supports only the behaviour exercised. |
+| Changeset | One file in `.changeset/` describing a pending change and its bump. Written per change; consumed and deleted when a release is versioned. |
+| Release | A version bump, a changelog entry and a git tag on `master`. Nothing is published to a package registry. |
 
 ## Document responsibilities
 
@@ -30,6 +32,8 @@ current implementation status.
 | `skills/<category>/<name>/SKILL.md` | Instructions for executing that skill, including its inputs, boundaries and completion conditions. |
 | `docs/<category>/README.md` | The workflow map, entry choices and which stages are implemented. |
 | `docs/<category>/<name>.md` | How a person uses one skill, recognizes a good run, and handles known limitations. |
+| `.changeset/<name>.md` | One pending change and the bump it earns, in the words that will appear in the changelog. |
+| `CHANGELOG.md` | The released history, generated from changesets. Never edited by hand. |
 
 Once `to-spec` publishes a topic's specification, the issue is the maintained
 record and that topic PRD is expected to become stale. The human-facing skill
