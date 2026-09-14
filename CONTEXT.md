@@ -18,6 +18,8 @@ current implementation status.
 | Spec | Settled requirements and decisions recorded in one GitHub issue by `to-spec`. It is content in an issue, not a second local specification file. |
 | Issue | A GitHub work item. A spec issue can later have sub-issues; it is not declared a parent merely because it contains a spec. |
 | Seam | A boundary at which a test can observe behaviour. `to-spec` proposes the seams for the whole spec and obtains the user's confirmation. |
+| Ticket | One sub-issue produced by `to-tickets`: a vertical slice of a spec, carrying the spec's test names for that slice. Tickets are disposable; the spec is not. |
+| Blocking relation | A GitHub issue dependency stating that one ticket gates another. Native, queryable state — not prose in an issue body. |
 | Verification evidence | Actual commands, outputs and observed artifacts for a stated environment and scenario. Evidence supports only the behaviour exercised. |
 | Changeset | One file in `.changeset/` describing a pending change and its bump. Written per change; consumed and deleted when a release is versioned. |
 | Release | A version bump, a changelog entry and a git tag on `master`. Nothing is published to a package registry. |
