@@ -1,0 +1,6 @@
+.DS_Store
+__pycache__/
+
+# Local-only decision record. Deliberately not published: it carries private
+# project details and personal working history. See the rule in AGENTS.md.
+prd.md
