@@ -1,11 +1,12 @@
 # nathan-skills
 
 > **Pre-1.0 — not ready to depend on.** The development workflow is unfinished:
-> it stops at `to-spec`, and the stages after it do not exist yet. Until there
-> is a `1.0.0` release, skill names, their inputs and their outcomes can change
-> without a deprecation path, and the way other people install this is still
-> undecided — `relink.sh` is built for the author's own machine. Read it, copy
-> from it, open an issue; just don't wire it into anything you rely on yet.
+> ticket splitting, implementation and QA do not exist yet. Code and
+> accessibility review can be used independently. Until there is a `1.0.0`
+> release, skill names, their inputs and their outcomes can change without a
+> deprecation path, and the way other people install this is still undecided —
+> `relink.sh` is built for the author's own machine. Read it, copy from it, open
+> an issue; just don't wire it into anything you rely on yet.
 
 One source of truth for a personal set of AI coding skills, shared across
 Claude Code, Codex and agy (Antigravity CLI).
@@ -33,6 +34,13 @@ not a toolbox of unrelated commands. Each workflow has its own guide.
 **[The development workflow →](./docs/development/README.md)** — idea to
 reviewed and verified: the chain, where to start, and a page per skill covering
 when to reach for it and what it does not do.
+
+Focused review skills can also be used independently:
+
+- [code-review](./docs/development/code-review.md) reviews a specified change
+  against repository standards, its spec and applicable accessibility criteria.
+- [accessibility-review](./docs/development/accessibility-review.md) reviews a
+  supplied design, local UI code or both for accessibility barriers.
 
 ## Conventions
 

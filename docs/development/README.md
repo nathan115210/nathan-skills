@@ -27,7 +27,7 @@ nathan-setup ─── once per project, before anything else
       ▼
      dev ✗ ──────────► a worktree, implemented and verified
       │
-      ├──► PR review ✗
+      ├──► code-review
       └──► integrate-review ✗ ──► QA report → your call
 ```
 
@@ -38,7 +38,7 @@ nathan-setup ─── once per project, before anything else
 | Write it down once | [`to-spec`](./to-spec.md) | One spec issue, and the test seams | ✅ |
 | Split it | `to-tickets` | Sub-issues and blocking relations | ✗ |
 | Build it | `dev` | A worktree, implemented and verified | ✗ |
-| Review it | PR-scope review | A review report on one PR | ✗ |
+| Review it | [`code-review`](./code-review.md) | Separate Standards, Spec and optional Accessibility findings | ✅ |
 | Verify it | `integrate-review` | A pass / fail / unknown QA report | ✗ |
 
 The unbuilt steps are genuinely unbuilt. `to-spec` will tell you to run
@@ -92,7 +92,8 @@ target across a change is one.
 
 ## Current state, honestly
 
-- Three of seven steps exist. The chain stops after `to-spec`.
+- Four of seven steps exist. The planning chain still has a gap after `to-spec`;
+  code-review can inspect separately prepared changes.
 - Runtime coverage and remaining checks are recorded on each skill's page.
   An implemented step is not necessarily verified end to end on every tool;
   sharing source files does not establish identical runtime behaviour.
@@ -105,3 +106,12 @@ Each skill's page below carries its own known limitations.
 - [nathan-setup](./nathan-setup.md)
 - [grill-me](./grill-me.md)
 - [to-spec](./to-spec.md)
+- [code-review](./code-review.md)
+- [accessibility-review](./accessibility-review.md)
+
+## Focused accessibility review
+
+[accessibility-review](./accessibility-review.md) is also implemented as an
+independent design/code review. It is not a replacement for QA. code-review
+uses its shared static criteria for applicable UI diffs. Each skill page states
+its current runtime coverage and limitations.

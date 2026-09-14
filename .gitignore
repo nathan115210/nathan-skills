@@ -5,3 +5,12 @@ __pycache__/
 # project details and personal working history. See the rule in AGENTS.md.
 prd.md
 node_modules/
+# Runtime evidence is kept outside the repository unless Nathan explicitly
+# chooses to version a particular artifact set.
+/docs/**/verification/
+/docs/**/evidence/
+/docs/**/fixtures/
+/docs/**/logs/
+/docs/**/test-results/
+/docs/**/*.jsonl
+/docs/**/*.log
