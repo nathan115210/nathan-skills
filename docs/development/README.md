@@ -242,3 +242,18 @@ Each skill's page below carries its own known limitations.
 independent design/code review. It is not a replacement for QA. code-review
 uses its shared static criteria for applicable UI diffs. Each skill page states
 its current runtime coverage and limitations.
+
+It needs no prior step and it can stop at its report, which it saves to
+`~/Downloads/a11y-<topic>.md`. When the barriers it finds should be fixed and
+tracked, that file joins the chain at the top:
+
+```
+accessibility-review ──► ~/Downloads/a11y-<topic>.md
+                                   │
+                                   ▼
+                              grill-me ──► ... (the chain above)
+```
+
+It enters at `grill-me`, not at `to-spec`, because a findings list is not a set
+of decisions: which barriers are in scope, in what order, and what "fixed" means
+for each are the user's calls, and `to-spec` only transcribes calls already made.
