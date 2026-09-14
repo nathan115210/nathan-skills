@@ -1,5 +1,12 @@
 # nathan-skills
 
+> **Pre-1.0 — not ready to depend on.** The development workflow is unfinished:
+> it stops at `to-spec`, and the stages after it do not exist yet. Until there
+> is a `1.0.0` release, skill names, their inputs and their outcomes can change
+> without a deprecation path, and the way other people install this is still
+> undecided — `relink.sh` is built for the author's own machine. Read it, copy
+> from it, open an issue; just don't wire it into anything you rely on yet.
+
 One source of truth for a personal set of AI coding skills, shared across
 Claude Code, Codex and agy (Antigravity CLI).
 
