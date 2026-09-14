@@ -69,27 +69,6 @@ details or personal history from the local decision record.
   An environment or usage-limit failure does not prove a skill failed or passed.
 - **Do not commit unless explicitly asked.** Leave work staged and say what's
   pending.
-- **Record decisions in `prd.md` as they happen.** Whenever a decision is made
-  or an earlier one is overturned, update that file in the same turn, without
-  waiting to be asked. It holds the *why*; this file holds the *how*. Move a
-  reversed decision into its "已推翻 / 已取代" section with the reason rather
-  than deleting it. Use absolute dates.
-- **`prd.md` is local-only and gitignored, on purpose.** It carries private project
-  details and personal working history, so it is never published with this
-  repository. A fresh clone will not have it — that is expected, not a missing file
-  to recreate. It remains the authority for *why* every rule here reads the way it
-  does, so on the machine that has it, the rule above is not optional. It is also
-  the one file in this repository with no version history: back it up somewhere
-  other than this remote.
-- **Close out the TODO in the same turn you settle it.** Finishing a discussion
-  is two writes, not one: record the decision, *and* update `prd.md` section
-  七、待讨论 to match. Never leave a settled question sitting there as open —
-  a stale open list is worse than no list, because the next session will
-  re-litigate what you already decided. Strike the entry through and point to
-  the deciding item's number (the precedent is item 4 → D37); do not delete it.
-  Leftover implementation details belong under the deciding item's own
-  "未决 / 待定", not back on the TODO list. Do this for every settled item,
-  including ones settled in passing.
 
 ## Renaming a skill
 
