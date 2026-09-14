@@ -61,12 +61,18 @@ details or personal history from the local decision record.
   category `README.md` only — repeating either per page is a second copy that
   will drift. Verification results belong in "It's working if" and "Known
   limitations"; unverified is stated as unverified.
-- **Runtime claims need runtime evidence.** Record the tool/version, tested
-  scenario, actual command and raw output in the verification record; summarize
-  only that coverage in the docs. Separate expected behaviour from observed
-  results, and distinguish passed, failed and untested checks. Parsing YAML,
-  finding a symlink, or a model saying it succeeded is not runtime verification.
-  An environment or usage-limit failure does not prove a skill failed or passed.
+- **Runtime claims need runtime evidence, but raw evidence stays outside this
+  repository by default.** Keep commands, stdout/stderr, fixtures, schemas and
+  generated test artifacts in a temporary directory or `~/Downloads`. The docs
+  contain only the durable human-facing summary: tool/version, tested scenario,
+  passed/failed/untested status, material limitation, and an external artifact
+  path only when the user wants to retain it. Do not create `verification/`,
+  `evidence/`, `fixtures/`, `logs/` or `test-results/` under `docs/`, and do not
+  add raw `.jsonl` or `.log` files there, unless the user explicitly asks to
+  version those artifacts. Run `python3 -m unittest scripts/test_docs.py` after
+  changing docs. Parsing YAML, finding a symlink, or a model saying it succeeded
+  is not runtime verification. An environment or usage-limit failure does not
+  prove a skill failed or passed.
 - **Do not commit unless explicitly asked.** Leave work staged and say what's
   pending.
 

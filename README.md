@@ -26,9 +26,12 @@ skills/
     grill-me/SKILL.md
     nathan-setup/SKILL.md
     to-spec/SKILL.md
+    code-review/SKILL.md
+    accessibility-review/SKILL.md
 scripts/
   relink.sh          links every skill into all three tools
   test_relink.py     isolated tests for the above
+  test_docs.py       rejects raw runtime evidence under docs/
 docs/
   development/       how to use the workflow: one page per skill, plus an overview
 ```
@@ -53,10 +56,12 @@ session.
 | `nathan-setup` | Connects a project to this workflow across all three installed tools |
 | `grill-me` | Planning interview; resolves decisions and writes a topic PRD |
 | `to-spec` | Turns settled decisions into one spec issue; chooses the test seams |
+| [`code-review`](./skills/development/code-review/SKILL.md) | Reviews changes against standards, spec and applicable accessibility criteria |
+| [`accessibility-review`](./skills/development/accessibility-review/SKILL.md) | Reviews designs, UI source or both for accessibility barriers |
 
-The workflow continues past `to-spec` — splitting, implementation, review, QA —
-but those skills are not built yet. Where a skill hands off to one that does not
-exist, it says so rather than pretending the chain is complete.
+The workflow continues past `to-spec`; splitting, implementation and QA remain
+unbuilt. Review is available independently for changes prepared outside those
+stages. Where a skill hands off to one that does not exist, it says so rather than pretending the chain is complete.
 
 **[How to use it → `docs/development/`](./docs/development/README.md)** — the
 chain, where to start, and a page per skill covering when to reach for it, the
