@@ -132,7 +132,7 @@ worse than no gate.
 ## Where it fits
 
 ```
-nathan-setup → grill-me → to-spec → to-tickets ✗ → dev ✗ → review ✗
+nathan-setup → grill-me → to-spec → to-tickets → dev ✗ → review ✗
 ```
 
 Nothing comes before it. It is the project's entry into
