@@ -1,5 +1,12 @@
 # nathan-skills
 
+> **Pre-1.0 — not ready to depend on.** The development workflow is unfinished:
+> it stops at `to-spec`, and the stages after it do not exist yet. Until there
+> is a `1.0.0` release, skill names, their inputs and their outcomes can change
+> without a deprecation path, and the way other people install this is still
+> undecided — `relink.sh` is built for the author's own machine. Read it, copy
+> from it, open an issue; just don't wire it into anything you rely on yet.
+
 One source of truth for a personal set of AI coding skills, shared across
 Claude Code, Codex and agy (Antigravity CLI).
 
@@ -18,59 +25,30 @@ cd nathan-skills
 needs editing on a new machine. It refuses to overwrite anything it did not
 create: it warns, skips, and exits non-zero.
 
-## Layout
+## Workflows
 
-```
-skills/
-  development/
-    grill-me/SKILL.md
-    nathan-setup/SKILL.md
-    to-spec/SKILL.md
-scripts/
-  relink.sh          links every skill into all three tools
-  test_relink.py     isolated tests for the above
-docs/
-  development/       how to use the workflow: one page per skill, plus an overview
-```
+Skills here belong to a workflow — a chain whose steps hand over an artifact,
+not a toolbox of unrelated commands. Each workflow has its own guide.
 
-Categories organise the source tree; the tool folders stay flat, so a skill is
-called the same thing everywhere. Skill folder names must be globally unique,
-and a skill's `name:` frontmatter must equal its folder name.
-
-Helpers that belong to one skill live inside that skill (`scripts/`,
-`references/`, `agents/`); only repository-wide scripts live in the root
-`scripts/`.
-
-## The skills
-
-These are pieces of one development workflow, not a toolbox of unrelated
-commands. Each step hands over an artifact — a file, then an issue, then a
-branch — rather than a conversation, and skills are never chained inside one
-session.
-
-| Skill | Does |
-| --- | --- |
-| `nathan-setup` | Connects a project to this workflow across all three installed tools |
-| `grill-me` | Planning interview; resolves decisions and writes a topic PRD |
-| `to-spec` | Turns settled decisions into one spec issue; chooses the test seams |
-
-The workflow continues past `to-spec` — splitting, implementation, review, QA —
-but those skills are not built yet. Where a skill hands off to one that does not
-exist, it says so rather than pretending the chain is complete.
-
-**[How to use it → `docs/development/`](./docs/development/README.md)** — the
-chain, where to start, and a page per skill covering when to reach for it, the
-questions it raises in use, and what it does not do.
+**[The development workflow →](./docs/development/README.md)** — idea to
+reviewed and verified: the chain, where to start, and a page per skill covering
+when to reach for it and what it does not do.
 
 ## Conventions
 
-- **After adding a skill folder, run `./scripts/relink.sh`.** A new skill is
-  invisible to every tool until you do. This is the step that gets forgotten.
-- Editing an existing skill needs no relink — the symlinks already point here.
-- Skills in this workflow are invoked explicitly, never auto-invoked, and never
-  chained inside one session.
+- Skills are invoked explicitly, never auto-invoked, and never chained inside
+  one session.
 - `AGENTS.md` is the real file; `CLAUDE.md` and `GEMINI.md` are symlinks to it,
   so the operating rules cannot drift between tools.
+- Adding, renaming or changing a skill means running `./scripts/relink.sh` and
+  writing a changeset. [`AGENTS.md`](./AGENTS.md) has the full rules.
+
+## Versioning
+
+Versioned as a whole with
+[changesets](https://github.com/changesets/changesets) — `npm run changeset`
+describes a change, [`CHANGELOG.md`](./CHANGELOG.md) is generated from those,
+and a release is a version bump and a git tag. Nothing is published to npm.
 
 ## Not managed here
 

@@ -1,0 +1,38 @@
+name: Changeset
+
+on:
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # The guard diffs against the base branch, so it needs the history.
+          fetch-depth: 0
+
+      - name: Test the guard
+        run: python3 -m unittest discover -s scripts -p 'test_check_changeset.py'
+
+      - name: Check changesets
+        env:
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          args=()
+          if echo "$LABELS" | grep -q '"allow-major"'; then
+            args+=(--allow-major)
+          fi
+          if echo "$LABELS" | grep -q '"skip-changeset"'; then
+            args+=(--skip-present)
+          fi
+          python3 scripts/check_changeset.py \
+            --base "origin/${{ github.event.pull_request.base.ref }}" "${args[@]}"
