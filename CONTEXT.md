@@ -34,6 +34,7 @@ current implementation status.
 | `docs/<category>/<name>.md` | How a person uses one skill, recognizes a good run, and handles known limitations. |
 | `.changeset/<name>.md` | One pending change and the bump it earns, in the words that will appear in the changelog. |
 | `CHANGELOG.md` | The released history, generated from changesets. Never edited by hand. |
+| `scripts/check_changeset.py` | The enforced form of the changeset rules: what CI rejects, and what a waiver label means. |
 
 Once `to-spec` publishes a topic's specification, the issue is the maintained
 record and that topic PRD is expected to become stale. The human-facing skill
