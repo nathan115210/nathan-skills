@@ -1,5 +1,5 @@
 ---
-"nathan-skills": minor
+"nathan-skills": patch
 ---
 
 Add portable code-review and accessibility-review skills for Claude Code,
