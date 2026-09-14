@@ -80,6 +80,63 @@ The last check is the tool itself: type `/grill-me` and see whether it offers
 the skill. A link can be perfect while the frontmatter keeps the tool from
 loading it — a skill's `name:` must equal its folder name.
 
+## Uninstall
+
+Run from the clone you want to disconnect:
+
+```bash
+./scripts/unlink.sh --dry-run
+./scripts/unlink.sh
+```
+
+Both commands inspect direct symlinks in `~/.claude/skills`, `~/.codex/skills`
+and `~/.gemini/config/skills`. They do not recurse into installed directories.
+The preview makes no changes. The actual run removes links whose targets can
+be confirmed inside this clone, including dangling links to removed skills;
+it does not depend on the current skill catalog.
+
+| Output | Meaning |
+| --- | --- |
+| `WOULD REMOVE` | A link the preview would remove. |
+| `REMOVE` | A link was removed; its source is still in the clone. |
+| `KEEP` | A link points elsewhere or its ownership is uncertain. Inspect it if you expected it to be removed. |
+| `FAIL` / nonzero exit | Removal failed, or the command arguments were invalid. |
+
+Kept links are expected when other skill collections are installed and do not
+cause failure. Real files and directories are preserved without being listed.
+Missing tool directories are left absent. Repeating uninstall is safe; run
+`./scripts/relink.sh` to reinstall.
+
+### What remains
+
+The clone, Codex built-ins, Cloudflare directories, and links from other sources
+remain. `~/.gemini/skills` and `~/.copilot/skills` are outside the managed scope.
+Project rules or configuration created by `nathan-setup`, and artifacts produced
+by skills, remain too: global uninstall does not undo project setup. For project
+cleanup, see [nathan-setup’s remove behaviour](./nathan-setup.md).
+
+Unlink before deleting or moving the clone. After moving it, reinstall from the
+new location. If it has already moved or disappeared, inspect the old links
+with `readlink` and remove only those you can confirm belong to the old clone;
+the new location cannot claim them by skill name alone.
+
+### It's working if
+
+The removal summary matches the preview and confirmed links are gone while
+source files remain. Isolated script tests passed on macOS with Bash 3.2.57:
+install, preview, uninstall, repeat, reinstall, stale and relative links,
+foreign and ambiguous targets, missing tool directories, invalid arguments,
+and a moved clone. These checks exercise filesystem behaviour, not skill
+execution inside Claude Code, Codex or agy.
+
+### Known limitations
+
+There is no per-tool uninstall option. Ambiguous dangling targets containing
+path traversal or symlink ancestors are kept for manual inspection. Targets
+outside the current clone, including old absolute paths after a move, are kept.
+Refreshing skills already loaded into a running tool session is unverified;
+use a fresh session to check discovery after uninstall.
+
 ## The chain
 
 ```

@@ -31,8 +31,27 @@ exits non-zero. A skipped name means the tools are running some other copy of
 that skill, so the exit code is worth reading. **[Installing, and checking it
 took →](./docs/development/README.md#install-and-check-it-took)**
 
-Keep the clone where it is: the links are absolute paths. If you move it, rerun
-`relink.sh` and delete the links left pointing at the old location.
+## Uninstall or move the clone
+
+From the clone, preview and then remove its links from Claude Code, Codex and agy:
+
+```bash
+./scripts/unlink.sh --dry-run
+./scripts/unlink.sh
+```
+
+The script removes only symlinks confirmed to point inside this clone, including
+stale links to removed or renamed skills. It preserves the repository, real
+files and directories, other sources' links, and project configuration. Running
+it again is safe. Reinstall with `./scripts/relink.sh`.
+
+To delete the clone, unlink first, then delete the repository yourself. To move
+it, unlink before moving, then run `relink.sh` from the new location. Links are
+absolute: if the clone has already moved, `unlink.sh` at the new location keeps
+old links because their ownership cannot be confirmed. Inspect their targets
+and remove only confirmed old links manually before relinking.
+
+[Uninstall output, verification and limitations →](./docs/development/README.md#uninstall)
 
 ## Workflows
 
@@ -56,8 +75,9 @@ Focused review skills can also be used independently:
   one session.
 - `AGENTS.md` is the real file; `CLAUDE.md` and `GEMINI.md` are symlinks to it,
   so the operating rules cannot drift between tools.
-- Adding, renaming or changing a skill means running `./scripts/relink.sh` and
-  writing a changeset. [`AGENTS.md`](./AGENTS.md) has the full rules.
+- Adding or renaming a skill requires `./scripts/relink.sh`; editing an existing
+  skill needs no relink. All skill changes require a changeset.
+  [`AGENTS.md`](./AGENTS.md) has the full rules.
 
 ## Versioning
 
@@ -73,7 +93,7 @@ and a release is a version bump and a git tag. Nothing is published to npm.
   (`cloudflare`, `wrangler`, `sandbox-*`, and the rest). They are a separate
   distributed pack.
 
-`relink.sh` will not touch either.
+`relink.sh` and `unlink.sh` preserve both.
 
 ## A note on the design record
 

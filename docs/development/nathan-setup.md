@@ -23,6 +23,10 @@ Linking skills globally (`scripts/relink.sh`) makes the skills visible to your
 tools; it does not tell any tool anything about *this* project. That is what
 this step is for.
 
+[Global uninstall](./README.md#uninstall) removes the skill links only. It leaves
+this project's rules and configuration in place; it does not reverse a
+`nathan-setup` run.
+
 Run it again when the project's rules or validation commands change materially,
 or when you install a tool that was missing the first time. It is a refresh, not
 a per-task step.
