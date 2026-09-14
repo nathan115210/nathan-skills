@@ -90,5 +90,73 @@ class RelinkTests(unittest.TestCase):
         self.assertFalse(self.home.exists())
 
 
+
+@unittest.skipUnless(shutil.which('git'), 'git is required to build a worktree')
+class WorktreeGuardTests(unittest.TestCase):
+    """relink derives its root from its own location, so a linked worktree
+    would silently repoint every tool at that branch's skills."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.base = Path(self.tmp.name).resolve()
+        self.home = self.base / 'home'
+        self.main = self.base / 'main'
+        skill = self.main / 'skills/development/example'
+        skill.mkdir(parents=True)
+        (skill / 'SKILL.md').write_text('---\nname: example\n---\n')
+        (self.main / 'scripts').mkdir()
+        shutil.copy2(Path(__file__).with_name('relink.sh'), self.main / 'scripts/relink.sh')
+        self.git('init', '-b', 'main')
+        self.git('add', '-A')
+        self.git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-m', 'init')
+        self.worktree = self.base / 'wt'
+        self.git('worktree', 'add', '-b', 'side', str(self.worktree))
+
+    def git(self, *args):
+        return subprocess.run(['git', '-C', str(self.main), *args],
+                              capture_output=True, text=True, check=True)
+
+    def run_relink(self, root, *args):
+        return subprocess.run(['bash', str(root / 'scripts/relink.sh'), *args],
+                              env={**os.environ, 'HOME': str(self.home)},
+                              capture_output=True, text=True)
+
+    def test_main_worktree_links_normally(self):
+        result = self.run_relink(self.main)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual((self.home / '.claude/skills/example').resolve(),
+                         self.main / 'skills/development/example')
+
+    def test_linked_worktree_is_refused_and_touches_nothing(self):
+        result = self.run_relink(self.worktree)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('linked git worktree', result.stderr)
+        self.assertIn(str(self.main), result.stderr)
+        self.assertIn('--force', result.stderr)
+        self.assertFalse(self.home.exists(), 'no tool directory may be created')
+
+    def test_linked_worktree_does_not_replace_existing_main_links(self):
+        self.assertEqual(self.run_relink(self.main).returncode, 0)
+        self.assertNotEqual(self.run_relink(self.worktree).returncode, 0)
+        self.assertEqual((self.home / '.claude/skills/example').resolve(),
+                         self.main / 'skills/development/example')
+
+    def test_force_links_from_a_linked_worktree_and_says_so(self):
+        result = self.run_relink(self.worktree, '--force')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('WARN', result.stdout)
+        self.assertIn('linked git worktree', result.stdout)
+        self.assertEqual((self.home / '.claude/skills/example').resolve(),
+                         self.worktree / 'skills/development/example')
+
+    def test_list_stays_available_inside_a_linked_worktree(self):
+        result = self.run_relink(self.worktree, '--list')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(result.stdout.split('\0')[:-1],
+                         [str(self.worktree / 'skills/development/example')])
+        self.assertFalse(self.home.exists())
+
+
 if __name__ == '__main__':
     unittest.main()
