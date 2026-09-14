@@ -12,6 +12,7 @@ skills/
     <skill-name>/SKILL.md   current development workflow skills
 scripts/
   relink.sh                global skill-linking script
+  unlink.sh                remove this clone’s global skill links
   check_changeset.py       guards the changeset rules, in CI and locally
 docs/
   <category>/README.md     workflow overview and implementation status
@@ -78,7 +79,7 @@ details or personal history from the local decision record.
   is not runtime verification. An environment or usage-limit failure does not
   prove a skill failed or passed.
 - **Every change a tool runs needs a changeset.** Run `npm run changeset` in the
-  same change that adds, renames, or alters a skill or `scripts/relink.sh`. No
+  same change that adds, renames, or alters a skill or a global script. No
   changeset means the change ships unversioned and unmentioned in the changelog.
   Docs-only edits that change nothing a tool runs need none.
 - **Before 1.0, never pick `major`.** Changesets does not soften a major bump on
@@ -150,6 +151,21 @@ label the guard rejects it. At the same time the pre-1.0 notice at the top of
 
 `scripts/relink.sh` already refuses to overwrite anything it did not create — it warns,
 skips, and exits non-zero. Never work around that guard by deleting the target.
+
+## Uninstall or move
+
+Run `./scripts/unlink.sh --dry-run` to preview, then `./scripts/unlink.sh` to
+remove this clone's links from all three managed tool folders. Only confirmed
+in-clone symlink targets are removed, including stale links. Real directories,
+foreign or uncertain links, project configuration and the clone are preserved.
+Do not remove targets based on a matching skill name alone.
+
+Unlink before deleting or moving the clone; after moving, run `relink.sh` from
+the new location. Already-moved clones require manual inspection of old links.
+See [the uninstall guide](./docs/development/README.md#uninstall) for output,
+verification and limitations. Test link-management changes with
+`python3 -m unittest scripts/test_relink.py scripts/test_unlink.py` using isolated
+homes; never verify uninstall by removing the user's active skill links.
 
 ## New machine
 

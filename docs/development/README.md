@@ -10,6 +10,133 @@ spent and partly compacted, and compaction silently drops the exact wording you
 meant to carry forward. So nothing important is allowed to live only in a
 session.
 
+## Install, and check it took
+
+From the repository root:
+
+```bash
+cd ~/dev/nathan-skills   # wherever the clone lives
+./scripts/relink.sh
+```
+
+`./` means "the file at this path", not a command on your `PATH` — the leading
+dot is required. The script derives every path from `$HOME` and its own
+location, and is safe to run again at any time.
+
+Run it after **adding a skill folder** or **setting up a new machine**. Editing
+an existing skill needs no rerun: the tools already point at these files, so a
+save is live everywhere at once.
+
+### Reading the output
+
+```
+  link  /Users/you/.claude/skills/grill-me
+  SKIP  /Users/you/.claude/skills/code-review -> symlink points outside this repo (...)
+
+central: /Users/you/dev/nathan-skills
+linked: 9   skipped: 6
+```
+
+| Line | Means |
+| --- | --- |
+| `link` | Installed. Every skill is relinked on every run, so these always appear. |
+| `SKIP` | Something already holds that name and this script did not create it. Nothing was touched. |
+| `exit 1` | At least one `SKIP`. Not a crash — the signal that something did not install. |
+
+**A `SKIP` means the tools are running someone else's copy of that skill.** The
+name is taken, so your version never gets linked. Read the path in the message:
+it says what owns the name. Either it is a real directory that is not managed
+here (the Cloudflare pack), or it is a stale link from another clone — in which
+case delete just that link and rerun:
+
+```bash
+rm ~/.claude/skills/<name> ~/.codex/skills/<name> ~/.gemini/config/skills/<name>
+./scripts/relink.sh
+```
+
+Never make the script overwrite a target instead. It refuses by design, and that
+refusal is the only thing standing between a rerun and someone else's work.
+
+### Confirming what a tool will actually run
+
+```bash
+readlink ~/.claude/skills/grill-me
+```
+
+The answer must be a path inside this repository. If it points anywhere else,
+that other copy is what runs — and an edit here changes nothing. Check all three
+tools, since they can disagree:
+
+```bash
+for d in ~/.claude/skills ~/.codex/skills ~/.gemini/config/skills; do
+  readlink "$d/grill-me"
+done
+```
+
+agy reads `~/.gemini/config/skills`, not `~/.gemini/skills`. A link in the
+second is invisible to it.
+
+The last check is the tool itself: type `/grill-me` and see whether it offers
+the skill. A link can be perfect while the frontmatter keeps the tool from
+loading it — a skill's `name:` must equal its folder name.
+
+## Uninstall
+
+Run from the clone you want to disconnect:
+
+```bash
+./scripts/unlink.sh --dry-run
+./scripts/unlink.sh
+```
+
+Both commands inspect direct symlinks in `~/.claude/skills`, `~/.codex/skills`
+and `~/.gemini/config/skills`. They do not recurse into installed directories.
+The preview makes no changes. The actual run removes links whose targets can
+be confirmed inside this clone, including dangling links to removed skills;
+it does not depend on the current skill catalog.
+
+| Output | Meaning |
+| --- | --- |
+| `WOULD REMOVE` | A link the preview would remove. |
+| `REMOVE` | A link was removed; its source is still in the clone. |
+| `KEEP` | A link points elsewhere or its ownership is uncertain. Inspect it if you expected it to be removed. |
+| `FAIL` / nonzero exit | Removal failed, or the command arguments were invalid. |
+
+Kept links are expected when other skill collections are installed and do not
+cause failure. Real files and directories are preserved without being listed.
+Missing tool directories are left absent. Repeating uninstall is safe; run
+`./scripts/relink.sh` to reinstall.
+
+### What remains
+
+The clone, Codex built-ins, Cloudflare directories, and links from other sources
+remain. `~/.gemini/skills` and `~/.copilot/skills` are outside the managed scope.
+Project rules or configuration created by `nathan-setup`, and artifacts produced
+by skills, remain too: global uninstall does not undo project setup. For project
+cleanup, see [nathan-setup’s remove behaviour](./nathan-setup.md).
+
+Unlink before deleting or moving the clone. After moving it, reinstall from the
+new location. If it has already moved or disappeared, inspect the old links
+with `readlink` and remove only those you can confirm belong to the old clone;
+the new location cannot claim them by skill name alone.
+
+### It's working if
+
+The removal summary matches the preview and confirmed links are gone while
+source files remain. Isolated script tests passed on macOS with Bash 3.2.57:
+install, preview, uninstall, repeat, reinstall, stale and relative links,
+foreign and ambiguous targets, missing tool directories, invalid arguments,
+and a moved clone. These checks exercise filesystem behaviour, not skill
+execution inside Claude Code, Codex or agy.
+
+### Known limitations
+
+There is no per-tool uninstall option. Ambiguous dangling targets containing
+path traversal or symlink ancestors are kept for manual inspection. Targets
+outside the current clone, including old absolute paths after a move, are kept.
+Refreshing skills already loaded into a running tool session is unverified;
+use a fresh session to check discovery after uninstall.
+
 ## The chain
 
 ```

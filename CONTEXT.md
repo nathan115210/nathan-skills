@@ -27,13 +27,14 @@ current implementation status.
 | Source | Responsibility |
 | --- | --- |
 | [AGENTS.md](./AGENTS.md) | Rules for working in this source repository. `CLAUDE.md` and `GEMINI.md` link to this same file. |
-| [README.md](./README.md) | Human entry point: what this repository is, installation and navigation. |
+| [README.md](./README.md) | Human entry point: what this repository is, installation, uninstall and navigation. |
 | `CONTEXT.md` | Shared vocabulary and the responsibilities of these documents. Update when their meaning changes. |
 | `skills/<category>/<name>/SKILL.md` | Instructions for executing that skill, including its inputs, boundaries and completion conditions. |
 | `docs/<category>/README.md` | The workflow map, entry choices and which stages are implemented. |
 | `docs/<category>/<name>.md` | How a person uses one skill, recognizes a good run, and handles known limitations. |
 | `.changeset/<name>.md` | One pending change and the bump it earns, in the words that will appear in the changelog. |
 | `CHANGELOG.md` | The released history, generated from changesets. Never edited by hand. |
+| `scripts/relink.sh` / `scripts/unlink.sh` | Install and remove this clone’s global skill links; preserve project configuration and other sources. |
 | `scripts/check_changeset.py` | The enforced form of the changeset rules: what CI rejects, and what a waiver label means. |
 
 Once `to-spec` publishes a topic's specification, the issue is the maintained
