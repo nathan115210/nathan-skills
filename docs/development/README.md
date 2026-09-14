@@ -10,6 +10,76 @@ spent and partly compacted, and compaction silently drops the exact wording you
 meant to carry forward. So nothing important is allowed to live only in a
 session.
 
+## Install, and check it took
+
+From the repository root:
+
+```bash
+cd ~/dev/nathan-skills   # wherever the clone lives
+./scripts/relink.sh
+```
+
+`./` means "the file at this path", not a command on your `PATH` — the leading
+dot is required. The script derives every path from `$HOME` and its own
+location, and is safe to run again at any time.
+
+Run it after **adding a skill folder** or **setting up a new machine**. Editing
+an existing skill needs no rerun: the tools already point at these files, so a
+save is live everywhere at once.
+
+### Reading the output
+
+```
+  link  /Users/you/.claude/skills/grill-me
+  SKIP  /Users/you/.claude/skills/code-review -> symlink points outside this repo (...)
+
+central: /Users/you/dev/nathan-skills
+linked: 9   skipped: 6
+```
+
+| Line | Means |
+| --- | --- |
+| `link` | Installed. Every skill is relinked on every run, so these always appear. |
+| `SKIP` | Something already holds that name and this script did not create it. Nothing was touched. |
+| `exit 1` | At least one `SKIP`. Not a crash — the signal that something did not install. |
+
+**A `SKIP` means the tools are running someone else's copy of that skill.** The
+name is taken, so your version never gets linked. Read the path in the message:
+it says what owns the name. Either it is a real directory that is not managed
+here (the Cloudflare pack), or it is a stale link from another clone — in which
+case delete just that link and rerun:
+
+```bash
+rm ~/.claude/skills/<name> ~/.codex/skills/<name> ~/.gemini/config/skills/<name>
+./scripts/relink.sh
+```
+
+Never make the script overwrite a target instead. It refuses by design, and that
+refusal is the only thing standing between a rerun and someone else's work.
+
+### Confirming what a tool will actually run
+
+```bash
+readlink ~/.claude/skills/grill-me
+```
+
+The answer must be a path inside this repository. If it points anywhere else,
+that other copy is what runs — and an edit here changes nothing. Check all three
+tools, since they can disagree:
+
+```bash
+for d in ~/.claude/skills ~/.codex/skills ~/.gemini/config/skills; do
+  readlink "$d/grill-me"
+done
+```
+
+agy reads `~/.gemini/config/skills`, not `~/.gemini/skills`. A link in the
+second is invisible to it.
+
+The last check is the tool itself: type `/grill-me` and see whether it offers
+the skill. A link can be perfect while the frontmatter keeps the tool from
+loading it — a skill's `name:` must equal its folder name.
+
 ## The chain
 
 ```

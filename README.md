@@ -17,14 +17,22 @@ at the same time — there is no copy to keep in sync, and no tool that quietly
 runs an older version.
 
 ```bash
-git clone <this repo>
+git clone https://github.com/nathan115210/nathan-skills
 cd nathan-skills
 ./scripts/relink.sh
 ```
 
-`relink.sh` derives every path from `$HOME` and its own location, so nothing
-needs editing on a new machine. It refuses to overwrite anything it did not
-create: it warns, skips, and exits non-zero.
+That is the whole install. `relink.sh` derives every path from `$HOME` and its
+own location, so nothing needs editing on a new machine, and it is safe to run
+again at any time. Rerun it after adding a skill; editing one needs no rerun.
+
+It never overwrites anything it did not create — it warns, skips that name, and
+exits non-zero. A skipped name means the tools are running some other copy of
+that skill, so the exit code is worth reading. **[Installing, and checking it
+took →](./docs/development/README.md#install-and-check-it-took)**
+
+Keep the clone where it is: the links are absolute paths. If you move it, rerun
+`relink.sh` and delete the links left pointing at the old location.
 
 ## Workflows
 
