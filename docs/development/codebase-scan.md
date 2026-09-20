@@ -113,9 +113,38 @@ named the findings.
 - An axis with nothing to scan (a repository with no UI) says so rather than
   passing silently.
 
-**Not yet verified at runtime.** No end-to-end run has been recorded on Claude
-Code, Codex or agy. The criteria above are the skill's stated completion
-conditions, not observed results.
+**Verified end-to-end, once** — 2026-09-20, Claude Code 2.1.278, `gh` 2.80.0,
+git 2.50.1, against this repository at `d61a154` (96 files; 60 `.md`, 9 `.py`,
+8 `.yaml`, 4 `.json`, 2 `.yml`, 2 `.sh`; working tree dirty, which the report
+recorded). The three axes ran as parallel subagents inheriting the session
+model. Every criterion above held: each axis returned findings **and** its own
+not-covered declaration, the candidate list came back severity-ordered with an
+annotation on all 17 entries, the accessibility axis reported *not applicable*
+with its enumeration rather than passing silently, and `git status --porcelain`
+in the target repository was byte-identical before and after. The tracker
+cross-reference ran against an authenticated `gh` with 0 open issues, so every
+annotation was *no matching issue* as a fact. Cost: 191k subagent tokens, 57
+tool calls, 6m48s. Raw output was kept outside this repository.
+
+What that run did **not** establish, and it is most of the skill's range:
+
+- **The accessibility axis only exercised its empty path.** This repository
+  renders no UI, so the axis confirmed it enumerates and reports not-applicable
+  correctly, and nothing about auditing an actual UI file.
+- **The architecture axis's hotspot rule was not meaningfully exercised.** 21
+  commits, max churn 8, median 1, all in one compressed span — the ranking
+  could not separate files, and the axis said so and read the structural
+  surfaces instead. Hotspot-first against a real history is untested.
+- **The truncation path is untested.** 96 files did not come close to exhausting
+  a session, so no axis ever had to report itself partially covered.
+- **Read-only enforcement was behavioural only** on all three axes, which the
+  report disclosed. No genuinely read-only execution environment was available,
+  so the boundary is the reviewers' own conduct, not a guarantee.
+- **Codex and agy are untested.** Discovery, the subagent-delegation step and
+  the report file are unverified there.
+
+The 17 candidates it produced are issues #19-#34 and #18 in this repository, so
+the run's output is inspectable rather than only described here.
 
 ## Known limitations
 
@@ -127,10 +156,16 @@ establish runtime behaviour, real contrast values, focus or announcement order.
 Coverage is bounded by one session. A repository large enough to exhaust it
 gets a partially-covered axis with the boundary named, never a clean one.
 
-The three axes need different targets to be exercised at all. A run against a
-repository with no UI leaves the accessibility axis reporting *not applicable*,
-which is the correct outcome there but exercises nothing. A repository with real
-UI, authentication and dependencies is what tests all three.
+The three axes need different targets to be exercised at all, and the one run
+on record proved the point rather than escaping it: against a repository with no
+UI, no authentication and two dependencies, the accessibility axis correctly
+reported *not applicable* and exercised nothing, and the architecture axis found
+its churn ranking degenerate. A repository with real UI, authentication and a
+dependency tree is what tests all three.
+
+Subagent delegation is verified on Claude Code only. Where delegation is
+unavailable the skill falls back to three sequential passes and must disclose
+that context isolation was lost; that fallback has not been run.
 
 This is not QA, not a penetration test, not an accessibility certification, and
 not sign-off on anything.

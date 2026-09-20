@@ -86,7 +86,11 @@ rendered once into a scratch file outside the repository; the preview is that
 file, `gh issue create --body-file` publishes that file, and afterwards the
 published body is `diff`ed against it. So "the body matches" is a command rather
 than a judgment, and a body mangled by shell quoting cannot slip through looking
-plausible. The scratch files are deleted when verification finishes.
+plausible. Step 8 does that read-back with `gh api ... --jq '.body' | diff - ...`:
+`gh api --jq` already writes a scalar string as raw text, but it terminates
+stdout with one transport newline, so a scratch file with no trailing newline
+needs that one-byte difference accounted for rather than being treated as a body
+mismatch. The scratch files are deleted when verification finishes.
 
 It then reads the issues and dependency graph back from GitHub and compares the
 titles, bodies, test allocation, parent relations, blocking edges and board
@@ -392,15 +396,42 @@ validation — it reaches execution and fails only on a missing issue number —
 no run has seen that exact query return a populated graph. Low risk, and not
 zero.
 
-**Untested.** No end-to-end run of the skill has been recorded in any tool.
-Discovery, the input check, the codebase exploration, the cut, the allocation of
-test names, the confirmation step and the handoff are unverified in Claude Code,
-Codex and agy. Only the API mechanics the skill depends on have evidence, and a
-skill can fail for reasons that have nothing to do with its API calls — a
-frontmatter field a tool parses differently, a step the model skips, a
-confirmation it does not actually wait for. The cheapest part of this gap to
-close is discovery: open a fresh session and see whether the tool offers
-`/to-tickets`.
+**Verified end-to-end, scan path only** — 2026-09-20, Claude Code 2.1.278,
+`gh` 2.80.0, against this repository. A `codebase-scan` findings list confirmed
+in the same session produced tracking parent #18 and 16 children, #19-#34, with
+one blocking edge (#30 blocked by #20). Everything the scan path specifies held:
+the parent carried the scan's header, scope and not-covered declarations and no
+findings; each child is exactly one finding, unmerged and unsubdivided; all 16
+carry the not-buildable statement; the Seams/Acceptance-Criteria gate was
+skipped with the absence of a spec stated first; the board question was asked
+once about the parent. The read-back returned 16 sub-issues with
+`hasNextPage: false`, one edge whose blocker is in this repository, and all 17
+titles and bodies byte-identical to the approved scratch files under `diff`. No
+label, Status or other field was set on anything, and the target repository's
+working tree was unchanged.
+
+**Two defects in this page's own instructions, found by running them.** Both are
+in step 8, the step that makes a publish verifiable:
+
+- `gh api … --jq -r '.body'` fails with `accepts 1 arg(s), received 2`, because
+  `--jq` takes one argument and `-r` is read as a second. It returns an empty
+  body, which then "differs" from every scratch file — a total false alarm that
+  looks exactly like a catastrophic publish failure. The working form is
+  `--jq '.body'`.
+- That form appends one trailing newline of its own, so a naive `diff` reports a
+  spurious one-line difference on every ticket. The comparison has to strip it.
+
+Both were hit verbatim, twice, in this run.
+
+**Still untested.** The **spec path** — the normal one — has no end-to-end run:
+reading a real `to-spec` spec, quoting its seams, cutting vertical slices and
+allocating test names are all unverified. So is **board placement and the whole
+of step 7's ordering**, because the run deliberately chose no board; that
+remains the least verified part of this skill, now for the second reason. Codex
+and agy are untested throughout, as is the handoff to `dev`. A skill can fail
+for reasons that have nothing to do with its API calls — a frontmatter field a
+tool parses differently, a step the model skips, a confirmation it does not
+actually wait for.
 
 The rest of this section is design, not evidence.
 
@@ -426,6 +457,12 @@ The rest of this section is design, not evidence.
   on no board cannot be positioned; the skill names those issues rather than
   ordering them, and putting them on the board is your call.
 - The handoff to `dev` has not been runtime-verified end to end.
+- The template has **no canonical wording for a ticket that records an open
+  question** — one that is neither a spec gap nor a scan finding. Issues #35-#38
+  in this repository were published with an invented third sentence, which is
+  not sanctioned by `references/ticket-template.md`. Either that path gets a
+  sanctioned form or it stays outside this skill; leaving it undecided invites
+  the next person to copy whatever they find.
 
 ## Where it fits
 

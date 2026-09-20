@@ -569,9 +569,12 @@ Compare the returned issues against the publish plan the user approved, **matchi
   **mechanically against its scratch file**, not by reading it:
 
   ```
-  gh api repos/<owner>/<repo>/issues/<number> --jq -r '.body' \
+  gh api repos/<owner>/<repo>/issues/<number> --jq '.body' \
     | diff - "$TMPDIR/to-tickets-<slug>.md"
   ```
+
+  If the scratch file has no trailing newline, account for that one-byte
+  difference before calling the body mismatched.
 
   A clean `diff` is the check. Checking that the headings are present is not —
   that is what a body mangled by quoting still looks like.
