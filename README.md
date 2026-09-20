@@ -20,9 +20,12 @@ runs an older version.
 git clone https://github.com/nathan115210/nathan-skills
 cd nathan-skills
 ./scripts/relink.sh
+python3 scripts/instructions.py install
 ```
 
-That is the whole install. `relink.sh` derives every path from `$HOME` and its
+These install skill links and shared global communication preferences respectively.
+See [communication setup and limitations](./docs/communication.md).
+`relink.sh` derives every path from `$HOME` and its
 own location, so nothing needs editing on a new machine, and it is safe to run
 again at any time. Rerun it after adding a skill; editing one needs no rerun.
 
@@ -38,12 +41,15 @@ From the clone, preview and then remove its links from Claude Code, Codex and ag
 ```bash
 ./scripts/unlink.sh --dry-run
 ./scripts/unlink.sh
+python3 scripts/instructions.py remove --dry-run
+python3 scripts/instructions.py remove
 ```
 
-The script removes only symlinks confirmed to point inside this clone, including
+`unlink.sh` removes only skill symlinks confirmed to point inside this clone, including
 stale links to removed or renamed skills. It preserves the repository, real
 files and directories, other sources' links, and project configuration. Running
-it again is safe. Reinstall with `./scripts/relink.sh`.
+it again is safe. The instructions helper separately removes this clone's global
+communication links. Reinstall with both installation commands above.
 
 To delete the clone, unlink first, then delete the repository yourself. To move
 it, unlink before moving, then run `relink.sh` from the new location. Links are

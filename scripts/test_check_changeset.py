@@ -117,6 +117,14 @@ class GuardTests(unittest.TestCase):
         self.commit('docs')
         self.assertEqual(self.run_guard(), 0)
 
+    def test_global_instructions_require_a_changeset(self):
+        write(self.repo / 'instructions/communication.md', 'Response rules\n')
+        self.commit('global instructions')
+        self.assertEqual(self.run_guard(), 1)
+        self.add_changeset('minor')
+        self.commit('record global behavior')
+        self.assertEqual(self.run_guard(), 0)
+
     def test_unknown_base_does_not_fail_the_build(self):
         self.change_a_skill()
         self.commit('undocumented')

@@ -22,7 +22,6 @@ TOOLS = {'claude': ('.claude', '.claude/skills'),
          'agy': (None, '.gemini/config/skills')}
 BEGIN, END = '<!-- nathan-setup:begin -->', '<!-- nathan-setup:end -->'
 FILES = ('AGENTS.md', 'CLAUDE.md')
-REPORT = 'nathan-setup-report.md'
 SKIP = {'.git', 'node_modules', '.venv', 'venv', '__pycache__', 'dist', 'build',
         '.next', '.nathan-setup', 'vendor'}
 INSTRUCTIONS = ('AGENTS.md', 'AGENTS.override.md', 'CLAUDE.md', 'CLAUDE.local.md',
@@ -119,7 +118,7 @@ def instruction_scan(project, home=None, limit=2000):
 def inspect(project):
     candidates = ['README.md', 'package.json', 'pyproject.toml', 'Makefile', 'Cargo.toml', 'go.mod']
     return {'project': str(project), 'tools': discover(),
-            'instructions': {n: file_info(project / n) for n in (*FILES, REPORT)},
+            'instructions': {n: file_info(project / n) for n in FILES},
             'instruction_scan': instruction_scan(project),
             'candidates': [p for p in candidates if (project / p).exists()],
             'ci': sorted(str(p.relative_to(project)) for p in
@@ -249,26 +248,6 @@ def write_block(project, name, expected, content, dry_run=False, accept_edited=F
         save_state(project, state)
         return {'file': name, 'status': 'removed' if remove else 'written',
                 'sha256': digest(plan['data']), 'diff': plan['diff']}
-
-
-def append_report(project, expected, content, dry_run=False):
-    if not content.strip():
-        raise ValueError('Empty report')
-    path = project / REPORT
-    def append():
-        info = file_info(path)
-        if info.get('sha256') != expected or info['kind'] not in ('missing', 'file'):
-            raise ValueError('Report changed or is not a regular file')
-        old = path.read_bytes() if path.exists() else b''
-        entry = ('\n\n## Setup verification — ' + now() + '\n\n' + content.rstrip() + '\n').encode()
-        if dry_run:
-            return {'status': 'preview', 'append': entry.decode()}
-        atomic(path, old + entry, expected)
-        return {'status': 'appended', 'sha256': digest(old + entry)}
-    if dry_run:
-        return append()
-    with locked(project):
-        return append()
 
 
 def has_import(text):
@@ -524,7 +503,7 @@ def verify(project, tool, expected, timeout=90, retry=False, dry_run=False,
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='command', required=True)
-    for name in ('inspect', 'write', 'connect', 'report', 'remove', 'status', 'verify'):
+    for name in ('inspect', 'write', 'connect', 'remove', 'status', 'verify'):
         child = sub.add_parser(name)
         child.add_argument('--project', required=True, type=Path)
         child.add_argument('--dry-run', action='store_true')
@@ -532,12 +511,9 @@ def main():
             child.add_argument('--file', required=True, choices=FILES)
             child.add_argument('--expected', default='missing')
             child.add_argument('--link', action='store_true')
-        if name in ('write', 'report'):
-            child.add_argument('--content', required=True, type=Path)
         if name == 'write':
+            child.add_argument('--content', required=True, type=Path)
             child.add_argument('--accept-edited-block', action='store_true')
-        if name == 'report':
-            child.add_argument('--expected', required=True)
         if name == 'connect':
             child.add_argument('--tool', action='append', choices=TOOLS, default=[])
         if name == 'verify':
@@ -554,7 +530,6 @@ def main():
         if args.command == 'inspect': result = inspect(project)
         elif args.command == 'status': result = status(project)
         elif args.command == 'connect': result = connect(project, args.tool, args.dry_run)
-        elif args.command == 'report': result = append_report(project, args.expected, args.content.read_text(), args.dry_run)
         elif args.command == 'verify': result = verify(project, args.tool, args.expect, args.timeout, args.retry, args.dry_run, args.question)
         elif args.command == 'remove':
             if args.link and args.file != 'CLAUDE.md': raise ValueError('Only CLAUDE.md link is managed')

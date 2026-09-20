@@ -20,7 +20,7 @@ CHANGESET_DIR = REPO / '.changeset'
 NOT_A_CHANGESET = {'README.md'}
 
 # Changes under these paths are run by a tool, so they need a changeset.
-RUNTIME_PREFIXES = ('skills/', 'scripts/')
+RUNTIME_PREFIXES = ('skills/', 'scripts/', 'instructions/')
 
 FRONTMATTER = re.compile(r'\A---\s*\n(.*?)\n---\s*\n', re.DOTALL)
 BUMP = re.compile(r'^\s*(?:"[^"]*"|\'[^\']*\'|[\w@/.-]+)\s*:\s*'

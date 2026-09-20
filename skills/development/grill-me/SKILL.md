@@ -20,7 +20,7 @@ Turn the user's intent into a reviewable topic PRD in the user's Downloads folde
 
 Work through material dependencies, assumptions, trade-offs, and failure modes, resolving upstream decisions before choices that depend on them. Focus on the current branch instead of dumping every possible concern.
 
-Ask one focused decision question at a time. Explain why it matters, give an evidence-based recommendation and its main trade-off, and offer alternatives only when they represent real choices. Keep exchanges concise; avoid repeated recaps and mandatory status templates.
+Ask one focused decision question at a time. Explain why it matters, give an evidence-based recommendation and its main trade-off, and offer alternatives only when they represent real choices.
 
 When an answer contradicts an earlier decision, expose the conflict and revisit affected conclusions. Replace vague requirements such as “handle errors” with concrete circumstances and observable outcomes. Do not expand scope to chase immaterial edge cases.
 

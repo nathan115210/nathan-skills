@@ -58,6 +58,16 @@ Step 4 is separate from step 3 on purpose. **A structural connection is not
 proof that anything works.** A symlink can exist while the tool cannot run,
 is not authenticated, or reads a different directory than you assume.
 
+## Results stay in the conversation
+
+Setup shows validation results, readiness per tool and workflow, and actionable
+gaps directly in the conversation. It does not create `nathan-setup-report.md`
+or a replacement report elsewhere. The helper no longer has a `report` command.
+
+Local `.nathan-setup/state.json` still retains ownership baselines and probe
+metadata so `status` and `verify --retry` work across runs. An old report is not
+needed for setup; it is left untouched unless you explicitly ask to remove it.
+
 ## Verification means one specific thing
 
 The probe asks each tool to quote something only a tool that actually read this
@@ -66,7 +76,7 @@ discovery** — nothing more.
 
 It does **not** establish that the three tools reason alike, that development
 hooks are enforcing anything, or that the project's own validation commands run.
-Those are separate claims and the report keeps them separate.
+Those are separate claims and the conversation results keep them separate.
 
 Results are three-state, and `pending` is never a pass:
 
@@ -83,7 +93,7 @@ ready**, with the failing tool and the reason named.
 
 **It says my project is "partially ready". Is that broken?**
 Usually not. It means at least one tool verified and at least one did not. The
-report names which and why. A quota limit or a missing binary is an environment
+conversation names which and why. A quota limit or a missing binary is an environment
 problem, and it is deliberately recorded as `pending` rather than dressed up as
 either success or failure.
 
@@ -102,7 +112,7 @@ that review — never as a way to silence the refusal.
 **Can it undo what it did?**
 Yes: `remove` deletes only an *unchanged, owned* block and leaves surrounding
 human text alone. A block you have edited is refused rather than force-deleted.
-Report history is always preserved.
+Existing reports from older versions are left untouched.
 
 **Will it install the development gates / hooks?**
 No, because they do not exist yet. It reports them as unavailable. It will never
@@ -127,7 +137,10 @@ worse than no gate.
   project as its workspace and can answer from a previous session's leftovers.
 - In headless mode a tool may auto-deny a permission prompt and return an empty
   answer. That is recorded as `pending`, not as a failure of the skill.
-- Verified on macOS only.
+- Verified on macOS only. The report-removal change is covered by isolated
+  helper tests (Python 3 on macOS), including setup/refresh without a report,
+  preservation of existing reports, and rejection of the removed command.
+  This change has not been exercised end to end inside a provider session.
 
 ## Where it fits
 
