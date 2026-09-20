@@ -116,8 +116,8 @@ Preserve whichever of these applies to the path you ran.
 ## Completion and handoff
 
 The report is the deliverable. After presenting it in full, **save it to
-`~/Downloads/a11y-<topic>.md`** and give the user its absolute path. Skip the
-file only if the user says they don't want one, or the active tool mode and
+`~/Downloads/accessibility-audit-<topic>.md`** and give the user its absolute
+path. Skip the file only if the user says they don't want one, or the active tool mode and
 permissions prevent writing it — in that case say so plainly rather than
 claiming it was saved.
 

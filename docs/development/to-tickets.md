@@ -7,12 +7,13 @@
 Takes **one** spec issue and turns it into sub-issues, each carrying native
 blocking relations, on GitHub.
 
-Three things happen here that happen nowhere else in the chain: the work gets
-cut into slices, the spec's test names get allocated to those slices, and the
-slices the spec cannot make buildable get marked as such in writing.
+Four things happen here that happen nowhere else in the chain: the work gets
+cut into slices, the spec's test names get allocated to those slices, the slices
+the spec cannot make buildable get marked as such in writing, and the whole open
+backlog gets put into one order with the new tickets inserted into it.
 
 It writes no files. The only exit is issues — and, when the spec issue is on a
-GitHub Project, the same board the spec issue is on.
+GitHub Project, the same board the spec issue is on, in an order you approved.
 
 ## When to reach for it
 
@@ -39,7 +40,7 @@ record and the planning session that produced it is gone.
   Project. `repo` does not cover Projects v2, so a token with `repo` alone passes
   every other check and then fails at placement — after the issues exist. The
   skill checks this up front and tells you to run `gh auth refresh -s project`.
-  Missing it costs you the board, not the breakdown.
+  Missing it costs you the board and the ordering, not the breakdown.
 - Nothing else. There is no setup step and no configuration.
 
 ## What it does not decide
@@ -96,10 +97,11 @@ read-back; a remaining mismatch is reported as a partial publish.
   native GitHub state, which is queryable. A line of prose naming them is a
   second copy that drifts, and when the body and the graph disagree somebody
   acts on the wrong one.
-- **No label, no status line, and no Project field** — no Status, Priority or
-  Size. Whether a ticket is buildable is judged by whether it carries test names,
-  so a label or a field would be a second copy of that fact. The first pass over
-  your board is yours.
+- **No label, no status line, and no Project field** — no Status, no Size, and
+  no Priority field either. Whether a ticket is buildable is judged by whether it
+  carries test names, so a label or a field restating that would be a second copy
+  of it. Order is set as the board's own item position, not as a field — see
+  below.
 - **No file paths and no code snippets**, with the same prototype exception the
   spec has.
 - **Nothing invented.** A slice no test name covers says so outright: *"No test
@@ -131,6 +133,42 @@ If placement fails, the publish still finishes. The issues and their native
 relations are the deliverable; the board is a view of it. You get the placement
 reported as incomplete, with the command to finish it by hand — because a board
 showing half a breakdown looks like the whole breakdown.
+
+## The order it puts your board in
+
+You work down the board from the top, one issue at a time, and you do not
+re-rank it by hand. So an issue nobody positioned is an issue you never reach.
+The skill therefore reads every open issue on the parent's board, builds **one
+total order** with the new tickets inserted, shows you that complete list in the
+same approval as the ticket bodies, and writes it back after publishing.
+
+Three rules build the order:
+
+1. A blocker comes before everything it blocks. This is the only hard one.
+2. Existing issues keep their relative order — the board as it stands is yours.
+   An existing issue moves only when a blocking edge forces it, and every such
+   move is called out with its old and new position.
+3. New tickets are placed by technical risk and dependency: what they unblock,
+   what stays broken until they are done, how far the blast radius reaches.
+
+**The ranking evidence stops at the tracker.** A waiting customer or an
+approaching deadline is not in the issues, so it cannot be in the order. If your
+order depends on something the issues do not say, say it in the approval step;
+the skill will ask rather than guess.
+
+Order is written as the board's **item position**, the order GitHub actually
+displays. Not a Priority field: that would be a second statement of the same
+ranking to keep in step by hand, which is the drift this workflow refuses
+everywhere else.
+
+One consequence worth knowing before you go looking for the change: position is
+a property of the project, not of a view. **A view with its own sort applied
+shows that sort instead**, and the written order stays invisible there until the
+sort is cleared.
+
+If the parent is on no board, or the token lacks the `project` scope, nothing is
+ordered and the skill says so — it does not substitute a label, a field or an
+ordered list in a comment.
 
 ## The trap it exists to avoid
 
@@ -221,6 +259,11 @@ ticket marked not buildable.
 - Every test name you remember deciding lands on exactly one ticket, unchanged.
 - It names the destination board in the preview, before you approve — or says
   there is none, and why.
+- The preview shows the complete post-insert order of every open issue on that
+  board, not just where the new tickets landed, and names any existing issue it
+  wants to move and the edge that moves it.
+- Afterwards the board reads top-to-bottom in the order you approved, and no
+  blocker sits below something it blocks.
 - Afterwards, the parent shows its sub-issues and each ticket shows its blockers
   in GitHub's own UI, every title and body matches the approved preview, and
   every ticket is on the parent's board with no field set — while the parent's
@@ -270,7 +313,21 @@ Four things that run confirmed and design alone would not have:
 Still unverified: an **organization**-owned Project (only a user-owned one was
 exercised), and the failure text when the token lacks the `project` scope.
 
-**Valid, but never run against data.** The read-back query in step 7 nests
+**Schema-confirmed, not run** — the ordering API. 2026-09-21, `gh` against
+GitHub's GraphQL API. Introspection showed `ProjectV2.items` accepting
+`orderBy: {field: POSITION, direction: ASC}` (`POSITION` is the only value that
+enum has) and `updateProjectV2ItemPosition` taking `projectId`, `itemId` and an
+optional `afterId`. Both of the skill's actual queries were then sent and
+reached execution, failing only on a deliberately fake node id (`NOT_FOUND`,
+not a validation error), which establishes their shape and nothing else.
+
+What that does **not** establish: that a top-down sweep of the mutation produces
+the intended board order, that omitting `afterId` reliably moves an item to the
+top, or how the sweep behaves against a large board. No ordering run has been
+performed against a real Project. Treat the ordering step as the least verified
+thing in this skill.
+
+**Valid, but never run against data.** The read-back query in step 8 nests
 `blockedBy` inside `subIssues.nodes`. Both connections returned real nodes
 separately in the verified run, and the nested query passes GitHub's schema
 validation — it reaches execution and fails only on a missing issue number — but
@@ -303,6 +360,13 @@ The rest of this section is design, not evidence.
 - The read-back pages past 50 sub-issues and 20 blockers when GitHub says there
   is more, but GitHub caps a parent at 100 sub-issues regardless; a breakdown
   that large is beyond what this skill has been designed around.
+- Ordering costs one mutation per item and reads the whole board twice. On a
+  large backlog that is a long step, and `403`/`429` back-off leaves a partially
+  written order — correct from the top down, untouched below the point it
+  stopped, and reported as partial.
+- Ordering is limited to issues **on the parent's board**. An open issue that is
+  on no board cannot be positioned; the skill names those issues rather than
+  ordering them, and putting them on the board is your call.
 - The handoff to `dev` has not been runtime-verified end to end.
 
 ## Where it fits

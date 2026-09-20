@@ -1,6 +1,6 @@
 ---
 name: to-tickets
-description: Split one spec issue into sub-issues carrying native blocking relations — read the spec, cut tracer-bullet slices, allocate its test names, get the breakdown confirmed, then publish to GitHub. No requirements interview, no seam choice, no code.
+description: Split one spec issue into sub-issues carrying native blocking relations — read the spec, cut tracer-bullet slices, allocate its test names, get the breakdown and the resulting backlog order confirmed, then publish to GitHub and write that order back to the Project. No requirements interview, no seam choice, no code.
 disable-model-invocation: true
 disallowed-tools: Write, Edit, NotebookEdit
 ---
@@ -9,11 +9,16 @@ disallowed-tools: Write, Edit, NotebookEdit
 
 You are the only splitter in this workflow. One spec issue goes in; its sub-issues and their blocking relations come out.
 
-Three things happen here and nowhere else:
+Four things happen here and nowhere else:
 
 1. The work is cut into slices, and each slice declares what blocks it.
 2. The spec's test names are allocated to those slices.
 3. The slices the spec cannot make buildable are marked as such, in writing.
+4. The open backlog is put into one order, with the new slices inserted into it.
+
+The fourth is why this skill touches issues it did not create. Every path that
+produces issues funnels through here, so this is the one place a total order can
+be written without a second entry point to keep in step.
 
 ## Inputs
 
@@ -48,6 +53,7 @@ Seam count is a whole-codebase property, which is why it is settled once per spe
 - Cut the slices and their blocking edges, and get them confirmed.
 - Create the sub-issues and both kinds of relation.
 - Put each new issue in the Project the parent is already in, when it is in one.
+- Read every open issue on that Project and set the order of its items.
 - Mark every slice the spec cannot make buildable.
 
 **Not yours:**
@@ -57,12 +63,18 @@ Seam count is a whole-codebase property, which is why it is settled once per spe
 - **Inventing acceptance criteria or test names.** The user sets what counts as correct. You transcribe and allocate.
 - **Writing any document.** No `.md` file, no `.scratch/` directory, no local file per ticket. The only exit is issues. A ticket in a file is the second record this workflow exists to avoid.
 
-  *One narrow exception, and it is transport rather than a record:* the approved body of each ticket is held in a scratch file under `$TMPDIR` between step 5 and the end of step 7, so that the text you show the user, the text GitHub receives, and the text you compare against afterwards are one string rather than three transcriptions of it. Those files live outside the repository, are never a source of truth after publication, and are deleted at the end of step 7. Writing a ticket anywhere inside the repository is still forbidden.
+  *One narrow exception, and it is transport rather than a record:* the approved body of each ticket is held in a scratch file under `$TMPDIR` between step 5 and the end of step 8, so that the text you show the user, the text GitHub receives, and the text you compare against afterwards are one string rather than three transcriptions of it. Those files live outside the repository, are never a source of truth after publication, and are deleted at the end of step 8. Writing a ticket anywhere inside the repository is still forbidden.
 - **Touching code or git.** No edits, no worktree, no spike, no commit, no push.
 - **Rewriting the parent.** You attach children to it. You do not edit its body, change its title, or close it.
-- **Labels, and Project fields.** No readiness label; no Status, Priority or Size; no custom field of any kind. Readiness is judged by whether a ticket carries test names, and a label or a field would be a second copy of that fact that drifts from it. Setting a field is also the user's first pass over their own board, not yours.
+- **Labels, readiness and Status.** No readiness label, no Status, no Size, no custom field of any kind. Readiness is judged by whether a ticket carries test names, and a label or a field restating it would be a second copy of that fact that drifts from it.
 
-Project **membership** is not in that list, and is deliberately not treated like a label. Putting an issue on a board copies no fact — it does not restate the test names, the parent relation or the blocking edges — so there is nothing for it to drift from. It is a view, and it is the user's view of this work.
+Two things are deliberately **not** in that list.
+
+Project **membership**. Putting an issue on a board copies no fact — it does not restate the test names, the parent relation or the blocking edges — so there is nothing for it to drift from. It is a view, and it is the user's view of this work.
+
+**Order.** Same argument, and it is why the rule here is not the one the other fields get. Order has no native source anywhere in GitHub: it copies no fact, so there is nothing for it to drift from. And it cannot be left as the user's own first pass over the board, because the user does not make that pass — work is picked strictly top-down, one issue at a time, so an unordered issue is an invisible issue. An order nobody sets is not a neutral default; it is the creation order, which is not an order at all.
+
+Ranking evidence stops at what the issues contain — severity, blocking relations, blast radius. Commercial priority (a waiting customer, an approaching deadline) is not knowable from the tracker, so the order you propose is by technical risk and dependency. Say that when you present it. If the user wants it ordered on something else, ask; do not infer it.
 
 ## Process
 
@@ -115,7 +127,9 @@ without it passes every check above and then fails at `gh project item-add` —
 after the issues already exist. If `project` is missing, say so here and give the
 user the fix (`gh auth refresh -s project`). Do not stop for it: the issues and
 their relations are the deliverable, and the board is not. Carry the gap into
-step 5 so the user approves a breakdown knowing it will not be placed.
+step 5 so the user approves a breakdown knowing it will be neither placed nor
+ordered — without that scope, both step 6's placement and step 7's ordering are
+unavailable, and the new issues arrive in the one place the user will not look.
 
 ### 1. Read the spec, and state what it can support
 
@@ -221,15 +235,99 @@ each ticket, show:
 
 Then state, separately: the total ticket count, **every test name that fitted no slice**, and **which Project the issues will be placed on** — by name, or "none, the parent is on no board", or "none, the token lacks the `project` scope".
 
+#### The order, in the same preview
+
+The user works strictly top-down, so the order the new tickets land in is as
+much a part of this approval as their bodies. It is shown here, in this preview,
+and approved in the same breath. **No second approval gate is added**, and
+nothing about the order is settled after the user has said yes.
+
+Read the board as it stands now, in its own order:
+
+```
+gh project view <project number> --owner <owner login> --format json --jq '.id'
+
+gh api graphql -f query='
+query($project: ID!, $cursor: String) {
+  node(id: $project) { ... on ProjectV2 {
+    items(first: 100, after: $cursor, orderBy: {field: POSITION, direction: ASC}) {
+      pageInfo { hasNextPage endCursor }
+      nodes { id content { __typename
+        ... on Issue { number title state
+          blockedBy(first: 20) { nodes { number } } }
+        ... on PullRequest { number state } } }
+    }
+  } }
+}' -f project='<project id>' --jq '.data.node.items'
+```
+
+`POSITION` is the board's manual order and the only order GitHub stores. **Page
+until `hasNextPage` is `false`**, adding `-f cursor='<endCursor>'` from the
+previous page — omit `cursor` entirely on the first call rather than passing an
+empty string — a truncated list silently drops the tail of the backlog, and
+everything you then insert lands above issues you never saw. Ignore closed
+issues and pull-request items; they are not work to pick up.
+
+`blockedBy` comes back with each item so rule 1 below can be checked against the
+board as it is, not only against the edges this breakdown adds.
+
+Then list the repository's open issues, to find the ones the board does not
+hold:
+
+```
+gh issue list --state open --limit 200 --json number,title
+```
+
+An open issue that is **on no board** cannot be positioned. List those
+separately in the preview, by number and title, and say they are outside the
+order until the user puts them on the board. Do not place them there yourself —
+membership is inherited from the parent, and these issues have no parent here.
+
+Then build **one total order** over the open issues — the existing ones and the
+new ones together:
+
+1. **A blocker comes before everything it blocks.** This is the only hard rule,
+   and it applies across the whole board, not just within this breakdown. If the
+   existing order already violates it, fixing that is a move, and moves are
+   declared below.
+2. **Otherwise, keep the existing relative order of existing issues.** The board
+   as it stands is the user's order, and rewriting it wholesale on the strength
+   of a spec you just read is not yours to do.
+3. **Place each new ticket by technical risk and dependency** — what it unblocks,
+   what breaks or stays broken until it is done, how far its blast radius
+   reaches. Not by the order you cut the slices in.
+
+Show the result as a **complete numbered list of every open issue on the board,
+after insertion**, top to bottom, marking each line `new` or its existing
+number. A list of only the new tickets' positions is not reviewable: what the
+user actually needs to see is the queue they will work down.
+
+Then state separately **every existing issue that moves**, with its old and new
+position and the blocking edge that forced it. An existing issue moving is the
+one thing in this preview the user did not ask for, so it is never left to be
+noticed in the list.
+
+Say in one line that the order is by technical risk and dependency only, and
+that nothing outside the tracker — a waiting customer, a deadline — was
+available to rank on.
+
+If the parent is on no board, or the token lacks the `project` scope, say that
+no order can be written and that the new issues will arrive wherever GitHub puts
+them. Do not invent a substitute ordering surface: no label, no Priority field,
+no ordered list in a comment.
+
 Ask the user:
 
 - Is the granularity right — too coarse, too fine?
 - Is every blocking edge a real gate?
 - Should any tickets be merged or split further?
+- Is the order right, and is anything that should be near the top sitting low?
 
 Iterate until the user approves. After any merge, split, wording change, test
-allocation change, or edge change, render and show the affected preview again.
-The approved titles, bodies, and blocking edges are the publish plan.
+allocation change, edge change or reordering, render and show the affected
+preview again — and show the order list again whenever an edge changed, because
+an edge change can move issues the user was not looking at. The approved titles,
+bodies, blocking edges and order are the publish plan.
 
 **Publish nothing before that.** Do not replace the full preview with a summary:
 the body the user approves must be the body GitHub receives. Relations are far
@@ -261,7 +359,7 @@ and can truncate the title silently.
 gh api repos/<owner>/<repo>/issues/<number> --jq '.id'
 ```
 
-Keep the `number` you captured here. It, not the title, is what step 7 uses to
+Keep the `number` you captured here. It, not the title, is what step 8 uses to
 match a published issue to its plan entry.
 
 Then attach it to the parent, and add its blocking edges:
@@ -285,15 +383,21 @@ gh project item-add <project number> --owner <project owner login> --url <issue 
 **A failure here does not stop the publish and is never silent.** The issues and
 their relations are the deliverable; the board is a view of it. On failure,
 finish the remaining tickets and their edges, then report the placement as
-incomplete in step 7 and give the user the command to finish it by hand. Placing
+incomplete in step 8 and give the user the command to finish it by hand. Placing
 half a breakdown on a board and saying nothing is the one outcome to avoid — the
 board then looks like the whole breakdown.
 
 **Do not set any Project field, and do not apply any label.** No Status, no
-Priority, no Size. Readiness is already judged by whether a ticket carries test
-names, and the first pass over the board is the user's. A Project with GitHub's
-default *item added → Todo* workflow enabled will set Status by itself; that is
-the board's own rule acting, and it is not yours to pre-empt or to duplicate.
+Size, no Priority, no custom field. Readiness is already judged by whether a
+ticket carries test names. A Project with GitHub's default *item added → Todo*
+workflow enabled will set Status by itself; that is the board's own rule acting,
+and it is not yours to pre-empt or to duplicate.
+
+**A Priority field is not how the order is written.** Step 7 writes the item's
+position, which is the order the user actually reads the board in. A Priority
+field beside it would be a second statement of the same ranking, kept in step by
+hand, and it is the drift this workflow refuses everywhere else. One order, in
+the place the board displays.
 
 **Back off rather than retry on `403` or `429`.** Publishing a breakdown is a
 burst of content-creating requests — a create, a sub-issue attach, one call per
@@ -309,7 +413,7 @@ the user resume.
 | `sub_issues` with a number as `sub_issue_id` | `404 Not Found`. Loud, and safe. |
 | `dependencies/blocked_by` with a number as `issue_id` | **HTTP 200, and a dependency on an unrelated issue in a stranger's repository.** The number was read as a database id, and low database ids exist somewhere on GitHub. Silent. |
 
-So: never pass a number as a payload id, and never treat the 200 as confirmation. Step 7 is not optional.
+So: never pass a number as a payload id, and never treat the 200 as confirmation. Step 8 is not optional.
 
 **A count is not a check.** `issueDependenciesSummary.blockedBy` can disagree with the `blockedBy` node list — a cross-repository edge is reachable in the list while the summary does not count it. Compare nodes, never totals.
 
@@ -318,7 +422,60 @@ If you no longer hold an `id`, read it back rather than guessing: `gh api repos/
 To undo an edge: `gh api -X DELETE repos/<owner>/<repo>/issues/<number>/dependencies/blocked_by/<blocker id>`.
 
 
-### 7. Read the issues and graph back, and compare them to what was approved
+### 7. Write the board order
+
+Only after every ticket exists and every ticket is on the board. An item id is
+created by placement, so nothing can be positioned before step 6 has finished
+for all of them.
+
+Skip this step entirely, and say so in step 8's report, if the parent was on no
+board or the `project` scope is missing.
+
+Re-read the board with the same paged query from step 5. **Do not reuse the
+item ids from the preview** — placement created the new items, and the board may
+have moved while the user was reading. Compare what comes back to the approved
+order and act on the difference, because the approval was for a board state, not
+for a list of numbers:
+
+| What changed | Do |
+| --- | --- |
+| Nothing but the new tickets appearing | Write the order. |
+| An open issue exists that the approved order does not mention | Write the approved order, then report that issue as unordered and where it ended up. Do not guess a position for it. |
+| An issue in the approved order has closed | Write the order over what remains, skipping it, and say so. |
+| An existing item has moved, or an issue in the approved order is gone from the board | **Stop.** Show the difference and let the user decide. The tickets are already published; leaving the board unordered is recoverable, and writing an order over someone else's change is not. |
+
+Then position the items from the top down:
+
+```
+gh api graphql -f query='
+mutation($project: ID!, $item: ID!, $after: ID) {
+  updateProjectV2ItemPosition(input: {projectId: $project, itemId: $item, afterId: $after}) {
+    items(first: 1) { totalCount }
+  }
+}' -f project='<project id>' -f item='<item id>' -f after='<the id of the item it goes below>'
+```
+
+**Omit `-f after` entirely for the first item** — with no `afterId`, the item
+moves to the **top** of the board. Do not pass an empty string for it.
+
+Walk the approved order from first to last: place the first item at the top,
+then place each following item after the one before it. Working top-down this way means each
+mutation's `afterId` is an item already in its final position, so a failure
+halfway leaves a correctly ordered head and an untouched tail, rather than an
+order interleaved with the old one.
+
+**Back off rather than retry on `403` or `429`**, exactly as in step 6. One
+mutation per item is another burst against the same secondary rate limit. A
+half-written order is recoverable — report where it stopped and the user runs
+the skill's remaining positions or drags the rest — but a retry loop against a
+rate limit is not progress.
+
+Position is a property of the **project**, not of a view. A view with its own
+sort applied displays that sort instead, and the order written here will not be
+visible in it until the sort is cleared. Say so once in the report; it is the
+most likely reason for a user to think the ordering did not work.
+
+### 8. Read the issues and graph back, and compare them to what was approved
 
 ```
 gh api graphql -f query='
@@ -363,6 +520,10 @@ Compare the returned issues against the publish plan the user approved, **matchi
   with the same `projectItems` query from step 1, against each child rather than
   the parent. Do not trust `item-add`'s own output: it reports the item it
   created, not the set of items on the board.
+- The board's order matches the approved order. Read the whole board back with
+  the paged `POSITION` query and compare it position by position, not by
+  spot-checking where the new tickets landed. Do not trust the mutation
+  responses: each reports its own item, and the order is a property of the list.
 
 If a created issue's title or body differs, update it from the scratch file
 (`gh issue edit <number> --body-file …`) and diff it again. If a relation differs, repair it and read the graph back
@@ -370,17 +531,20 @@ again. Stop retrying after one repair attempt for the same mismatch; report the
 publish as partial and name the exact mismatch that remains.
 
 Then report: each ticket by number and title, its blockers by number, the board
-it was placed on, and any title, body, sub-issue relation, blocking edge, or
-board placement that could not be made to match.
+it was placed on, its final position on that board, and any title, body,
+sub-issue relation, blocking edge, board placement or position that could not be
+made to match. If the order was written, say which existing issues moved and
+that a view with its own sort will not show the change.
 Report a partial publish as partial — a breakdown that is half-linked is worse
 than one that is not linked at all, because it looks finished.
 
 Delete the scratch files once the comparison is done. They are transport; leaving
 them behind creates the second record this skill exists to avoid.
 
-### 8. Hand off
+### 9. Hand off
 
-Say plainly what comes next: run `dev` on a buildable ticket. A ticket marked not buildable needs `grill-me` and `to-spec` again before implementation; splitting did not settle its missing criteria.
+Say plainly what comes next: work down the board from the top, and run `dev` on
+the first buildable ticket on it. A ticket marked not buildable needs `grill-me` and `to-spec` again before implementation; splitting did not settle its missing criteria.
 
 Then print one ready-to-paste line, with the numbers you just created filled in, for assigning the batch to a milestone:
 
@@ -415,5 +579,10 @@ Do not invoke anything. Skills in this workflow are not chained inside one sessi
   approved preview; any repair was read back once more.
 - The destination Project was inherited from the parent, not chosen or asked for, and was named in the preview before approval.
 - Every ticket was read back as being on that Project and on no other; an unplaced ticket was reported, with the command to place it.
-- The parent's body, title and state are unchanged. No label and no Project field were set on any issue.
+- The whole board was read in `POSITION` order, paged to the end, before the order was proposed.
+- The preview showed the complete post-insert order of every open issue, not only where the new tickets landed, and named every existing issue that moved and the edge that moved it.
+- The user approved that order in the same approval as the ticket bodies; no second gate was added and nothing about the order was settled afterwards.
+- Every blocker precedes what it blocks in the written order.
+- The board was read back after positioning and compared position by position against the approved order.
+- The parent's body, title and state are unchanged. No label, no Status, no Size and no Priority or other Project field were set on any issue; the only board write beyond membership was item position.
 - No file was written.

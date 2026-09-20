@@ -12,8 +12,8 @@ those from questions that require a running interface.
 For a combined review it presents design and code reports, then reconciles their
 agreement, differences and coverage gaps. It changes nothing in the project and
 publishes nothing. The single file it writes is its own report, saved to
-`~/Downloads/a11y-<topic>.md` so the findings survive the session that produced
-them.
+`~/Downloads/accessibility-audit-<topic>.md` so the findings survive the session
+that produced them.
 
 ## When to reach for it
 
