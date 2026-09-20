@@ -125,9 +125,10 @@ so this is the one outcome worth reading carefully. Individual edges are
 removable (`DELETE .../dependencies/blocked_by/<id>`) and the skill gives the
 command.
 
-**It told me to run `dev` and that skill doesn't exist.**
-Correct, and this is now the live gap in the chain. The tickets stand on their
-own until `dev` is built.
+**What happens after splitting?**
+Run [dev](./dev.md) on one buildable ticket in a fresh session. It reads the
+native dependencies and parent spec before implementing; it does not start a
+ticket marked not buildable.
 
 ## It's working if
 
@@ -186,11 +187,11 @@ The rest of this section is design, not evidence.
 - There is no re-split. Running it twice on the same spec issue creates a second
   set of children rather than reconciling with the first; unpick the first set
   by hand if you need to start over.
-- The downstream step (`dev`) does not exist, so the handoff at the end points
-  at nothing.
+- The handoff to `dev` has not been runtime-verified end to end.
 
 ## Where it fits
 
 Upstream is [to-spec](./to-spec.md), which settles the seams and the test names
-this skill only allocates. Downstream is `dev`, which is not built yet. See
+this skill only allocates. Downstream is [dev](./dev.md), which implements one
+buildable GitHub issue. See
 [the workflow overview](./README.md).

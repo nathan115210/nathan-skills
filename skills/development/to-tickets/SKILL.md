@@ -216,7 +216,7 @@ Then report: each ticket by number and title, its blockers by number, and any ed
 
 ### 8. Hand off
 
-Say plainly what comes next: `dev` is the next step, **and it does not exist yet** — that is a real gap in the chain today, not an oversight here. The tickets stand on their own until it is built; a ticket marked not buildable needs `grill-me` and `to-spec` again before anyone starts it.
+Say plainly what comes next: run `dev` on a buildable ticket. A ticket marked not buildable needs `grill-me` and `to-spec` again before implementation; splitting did not settle its missing criteria.
 
 Do not invoke anything. Skills in this workflow are not chained inside one session; the user starts the next one.
 

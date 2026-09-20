@@ -17,6 +17,7 @@ current implementation status.
 | Topic PRD | The planning document produced by `grill-me` in the user's Downloads folder, under a confirmed filename and with a project identity header. |
 | Spec | Settled requirements and decisions recorded in one GitHub issue by `to-spec`. It is content in an issue, not a second local specification file. |
 | Issue | A GitHub work item. A spec issue can later have sub-issues; it is not declared a parent merely because it contains a spec. |
+| Task worktree | The Git checkout assigned to one implementation ticket; it has its own working tree and index but shares refs and is not a sandbox. |
 | Seam | A boundary at which a test can observe behaviour. `to-spec` proposes the seams for the whole spec and obtains the user's confirmation. |
 | Ticket | One sub-issue produced by `to-tickets`: a vertical slice of a spec, carrying the spec's test names for that slice. Tickets are disposable; the spec is not. |
 | Blocking relation | A GitHub issue dependency stating that one ticket gates another. Native, queryable state — not prose in an issue body. |

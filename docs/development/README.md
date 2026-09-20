@@ -190,7 +190,7 @@ nathan-setup ─── once per project, before anything else
   to-tickets ──────► sub-issues + blocking relations
       │
       ▼
-     dev ✗ ──────────► a worktree, implemented and verified
+     dev ────────────► a task worktree + verification status
       │
       ├──► code-review
       └──► integrate-review ✗ ──► QA report → your call
@@ -202,13 +202,12 @@ nathan-setup ─── once per project, before anything else
 | Decide what to build | [`grill-me`](./grill-me.md) | A topic PRD in `~/Downloads` | ✅ |
 | Write it down once | [`to-spec`](./to-spec.md) | One spec issue, and the test seams | ✅ |
 | Split it | [`to-tickets`](./to-tickets.md) | Sub-issues and blocking relations | ✅ |
-| Build it | `dev` | A worktree, implemented and verified | ✗ |
+| Build it | [`dev`](./dev.md) | A task worktree and verification status | ✅ |
 | Review it | [`code-review`](./code-review.md) | Separate Standards, Spec and optional Accessibility findings | ✅ |
 | Verify it | `integrate-review` | A pass / fail / unknown QA report | ✗ |
 
-The unbuilt steps are genuinely unbuilt. `to-tickets` will tell you to run
-`dev` next, and `dev` does not exist yet — that is a real gap in the chain
-today, not an oversight in this page.
+`to-tickets` hands buildable issues to `dev`; missing criteria still block
+implementation. Integration QA remains a separate step.
 
 ## Where to start
 
@@ -218,7 +217,8 @@ today, not an oversight in this page.
 | An idea, a proposal, or a vague requirement | `grill-me` |
 | A finished discussion whose decisions are settled | `to-spec` |
 | An existing issue that is missing acceptance criteria | `grill-me`, then `to-spec` writes back into that issue |
-| An existing issue that already carries a test-name list | [`to-tickets`](./to-tickets.md), if the work is too big for one session |
+| A spec issue too big for one session | [`to-tickets`](./to-tickets.md) |
+| A buildable ticket or small unsplit spec issue | [`dev`](./dev.md) |
 
 Planning is allowed to stop at the PRD. Not every piece of work needs an issue,
 and nothing in `grill-me` forces you onward.
@@ -257,20 +257,23 @@ target across a change is one.
 
 ## Current state, honestly
 
-- Four of seven steps exist. The planning chain still has a gap after `to-spec`;
-  code-review can inspect separately prepared changes.
+- Six of seven steps exist. `dev` implements one GitHub issue, respecting
+  `to-tickets` test allocations and native dependencies. Integration QA is still
+  separate and unavailable as a workflow skill.
 - Runtime coverage and remaining checks are recorded on each skill's page.
   An implemented step is not necessarily verified end to end on every tool;
   sharing source files does not establish identical runtime behaviour.
-- The development gates (the hooks that would stop unsafe writes during `dev`)
-  do not exist. `nathan-setup` reports them as unavailable rather than
-  pretending they are installed.
+- Development hooks that mechanically restrict writes do not exist. `dev`
+  supplies a worktree workflow and project validation, not a sandbox. A project
+  requiring missing protections cannot treat that absence as a passed prerequisite.
 
 Each skill's page below carries its own known limitations.
 
 - [nathan-setup](./nathan-setup.md)
 - [grill-me](./grill-me.md)
 - [to-spec](./to-spec.md)
+- [to-tickets](./to-tickets.md)
+- [dev](./dev.md)
 - [code-review](./code-review.md)
 - [accessibility-review](./accessibility-review.md)
 
