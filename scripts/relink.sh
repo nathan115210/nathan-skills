@@ -73,10 +73,59 @@ if [ "${1:-}" = "--list" ]; then
   done
   exit 0
 fi
+force=0
+if [ "${1:-}" = "--force" ]; then
+  force=1
+  shift
+fi
 if [ "$#" -ne 0 ]; then
-  echo "Usage: $0 [--list]" >&2
+  echo "Usage: $0 [--list|--force]" >&2
   exit 1
 fi
+
+# CENTRAL is derived from this script's own location, so running relink from a
+# linked git worktree points every tool at that branch's copy of the skills.
+# Nothing looks wrong afterwards: the links are valid and the tools silently run
+# the branch instead of the main checkout. Refuse unless that is the intent.
+linked_worktree_common_dir() {
+  command -v git >/dev/null 2>&1 || return 1
+  local gitdir common
+  gitdir="$(git -C "$CENTRAL" rev-parse --absolute-git-dir 2>/dev/null)" || return 1
+  common="$(git -C "$CENTRAL" rev-parse --git-common-dir 2>/dev/null)" || return 1
+  case "$common" in
+    /*) ;;
+    *) common="$CENTRAL/$common" ;;
+  esac
+  gitdir="$(cd "$gitdir" 2>/dev/null && pwd -P)" || return 1
+  common="$(cd "$common" 2>/dev/null && pwd -P)" || return 1
+  [ "$gitdir" != "$common" ] || return 1
+  printf '%s\n' "$common"
+}
+
+if common_dir="$(linked_worktree_common_dir)"; then
+  branch="$(git -C "$CENTRAL" rev-parse --abbrev-ref HEAD 2>/dev/null)" || branch=""
+  main_worktree="$common_dir"
+  [ "$(basename "$common_dir")" = ".git" ] && main_worktree="$(dirname "$common_dir")"
+  if [ "$force" -eq 1 ]; then
+    echo "  WARN  linking from a linked git worktree (--force): $CENTRAL${branch:+ on $branch}"
+    echo "        every tool will run this worktree's skills, not $main_worktree"
+  else
+    {
+      echo "ERROR relink.sh is running from a linked git worktree, not the main checkout."
+      echo "      worktree: $CENTRAL${branch:+ (branch $branch)}"
+      echo "      main:     $main_worktree"
+      echo
+      echo "Linking from here would point all three tools at this branch's skills."
+      echo "They would keep working while quietly running this branch instead of the"
+      echo "main checkout, including versions of a skill that were superseded there."
+      echo
+      echo "Run ./scripts/relink.sh from $main_worktree instead, or pass --force if"
+      echo "you really want every tool to run this worktree."
+    } >&2
+    exit 1
+  fi
+fi
+
 for src in "${skill_sources[@]-}"; do
   [ -n "$src" ] || continue
   name="$(basename "$src")"

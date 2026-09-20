@@ -1,8 +1,8 @@
 # nathan-skills
 
 > **Pre-1.0 — not ready to depend on.** The development workflow is unfinished:
-> ticket splitting, implementation and QA do not exist yet. Code and
-> accessibility review can be used independently. Until there is a `1.0.0`
+> integration QA does not exist yet. Implementation and
+> focused reviews can be used independently. Until there is a `1.0.0`
 > release, skill names, their inputs and their outcomes can change without a
 > deprecation path, and the way other people install this is still undecided —
 > `relink.sh` is built for the author's own machine. Read it, copy from it, open

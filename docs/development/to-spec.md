@@ -22,7 +22,7 @@ You type it. It will not fire on its own.
 | Requirements are still open | [grill-me](./grill-me.md) first |
 | Decisions settled, you want them tracked | `to-spec` |
 | An issue exists but is missing its spec | `to-spec` — it writes back into that issue |
-| You want the work split into tickets | `to-tickets` — **not built yet** |
+| You want the work split into tickets | [to-tickets](./to-tickets.md) |
 
 Normally you run it in a **fresh session**, pointed at the PRD
 [grill-me](./grill-me.md) wrote. Reading a settled document is the normal input;
@@ -96,10 +96,10 @@ the work away either. Copy it out, or fix the access and re-run.
 **Does it add the issue to a GitHub Project?**
 No, and it sets no Project fields. Nothing in this workflow reads them.
 
-**It told me to run `to-tickets` and that skill doesn't exist.**
-Correct, and this is the live gap in the chain. Until `to-tickets` is built,
-splitting and marking which tickets are missing a test-name list are done by
-hand.
+**It told me to run `to-tickets`. What does that do?**
+It splits this issue into sub-issues with native blocking relations, and marks
+any ticket the spec cannot make buildable. See
+[to-tickets](./to-tickets.md).
 
 **Is the issue for me to read, or for the agent?**
 Mostly for whoever builds it. The parts worth your eyes are the seams and the
@@ -136,13 +136,13 @@ PRD is expected to go stale.
   does not show a normal spec run violating the rule or establish how every
   frontmatter field is parsed. The skill body carries the no-file-write rule.
 - GitHub only. No Linear, no local-file tracker, no detection of either.
-- The downstream step (`to-tickets`) does not exist, so the handoff at the end
-  points at nothing.
+- The downstream step, [to-tickets](./to-tickets.md), has runtime evidence only
+  for the GitHub APIs it depends on, not for an end-to-end run.
 - Large documents are read in parts; a PRD without stable section headings is
   hard to read selectively, which is why `grill-me` is required to write them.
 
 ## Where it fits
 
 Upstream is [grill-me](./grill-me.md), which does the deciding this skill only
-records. Downstream is `to-tickets`, which is not built yet. See
+records. Downstream is [to-tickets](./to-tickets.md). See
 [the workflow overview](./README.md).

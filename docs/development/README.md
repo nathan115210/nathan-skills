@@ -42,12 +42,14 @@ linked: 9   skipped: 6
 | `link` | Installed. Every skill is relinked on every run, so these always appear. |
 | `SKIP` | Something already holds that name and this script did not create it. Nothing was touched. |
 | `exit 1` | At least one `SKIP`. Not a crash — the signal that something did not install. |
+| `ERROR` | Refused before touching anything. The only cause today is running it from a linked git worktree — see below. |
+| `WARN` | Linking from a worktree on purpose (`--force`). |
 
 **A `SKIP` means the tools are running someone else's copy of that skill.** The
 name is taken, so your version never gets linked. Read the path in the message:
 it says what owns the name. Either it is a real directory that is not managed
-here (the Cloudflare pack), or it is a stale link from another clone — in which
-case delete just that link and rerun:
+here (the Cloudflare pack), or it is a stale link from another clone or
+worktree — in which case delete just that link and rerun:
 
 ```bash
 rm ~/.claude/skills/<name> ~/.codex/skills/<name> ~/.gemini/config/skills/<name>
@@ -56,6 +58,42 @@ rm ~/.claude/skills/<name> ~/.codex/skills/<name> ~/.gemini/config/skills/<name>
 
 Never make the script overwrite a target instead. It refuses by design, and that
 refusal is the only thing standing between a rerun and someone else's work.
+
+### Run it from the main checkout, not a worktree
+
+`relink.sh` works out which repository to link from **its own location**. Run it
+inside a linked `git worktree` and every tool ends up pointing at that branch's
+skills — the links are valid, nothing looks wrong, and the tools quietly run
+that branch instead of your main checkout, including versions of a skill that
+were superseded there.
+
+It now refuses, naming both paths, and links nothing:
+
+```
+ERROR relink.sh is running from a linked git worktree, not the main checkout.
+      worktree: /Users/you/dev/nathan-skills-some-branch (branch some-branch)
+      main:     /Users/you/dev/nathan-skills
+```
+
+Run it from the main checkout instead. `--force` overrides the refusal when you
+genuinely want every tool to run a worktree's version — useful for trying a
+skill out before merging it, and worth undoing afterwards by relinking from the
+main checkout. `--list` is read-only and is never blocked.
+
+A worktree checks out its own copy of `scripts/relink.sh`, so the refusal only
+exists in worktrees whose branch already contains it. An older worktree will
+still link happily — the guard stops the next one, not the ones already sitting
+on your disk.
+
+What such a run can actually take is narrower than it sounds. A link that
+already points at your main checkout is **protected**: the script sees a target
+outside its own root, prints `SKIP`, and exits non-zero. Only a **name nothing
+has claimed yet** gets captured — which in practice means a skill that is new on
+that branch. That is exactly how it happens: a branch adds a skill, a relink run
+inside its worktree claims the name first, and from then on the main checkout
+cannot take it back on its own, because the name is no longer free and `SKIP` is
+the script refusing to overwrite work it did not create. Delete that one link
+and relink from the main checkout.
 
 ### Confirming what a tool will actually run
 
@@ -149,10 +187,10 @@ nathan-setup ─── once per project, before anything else
    to-spec ──────────────► one spec issue  (+ the test seams, chosen once)
       │
       ▼
-  to-tickets ✗ ──────► sub-issues + blocking relations
+  to-tickets ──────► sub-issues + blocking relations
       │
       ▼
-     dev ✗ ──────────► a worktree, implemented and verified
+     dev ────────────► a task worktree + verification status
       │
       ├──► code-review
       └──► integrate-review ✗ ──► QA report → your call
@@ -163,14 +201,13 @@ nathan-setup ─── once per project, before anything else
 | Connect a project | [`nathan-setup`](./nathan-setup.md) | Project rules all three tools read | ✅ |
 | Decide what to build | [`grill-me`](./grill-me.md) | A topic PRD in `~/Downloads` | ✅ |
 | Write it down once | [`to-spec`](./to-spec.md) | One spec issue, and the test seams | ✅ |
-| Split it | `to-tickets` | Sub-issues and blocking relations | ✗ |
-| Build it | `dev` | A worktree, implemented and verified | ✗ |
+| Split it | [`to-tickets`](./to-tickets.md) | Sub-issues and blocking relations | ✅ |
+| Build it | [`dev`](./dev.md) | A task worktree and verification status | ✅ |
 | Review it | [`code-review`](./code-review.md) | Separate Standards, Spec and optional Accessibility findings | ✅ |
 | Verify it | `integrate-review` | A pass / fail / unknown QA report | ✗ |
 
-The unbuilt steps are genuinely unbuilt. `to-spec` will tell you to run
-`to-tickets` next, and `to-tickets` does not exist yet — that is a real gap in
-the chain today, not an oversight in this page.
+`to-tickets` hands buildable issues to `dev`; missing criteria still block
+implementation. Integration QA remains a separate step.
 
 ## Where to start
 
@@ -180,7 +217,8 @@ the chain today, not an oversight in this page.
 | An idea, a proposal, or a vague requirement | `grill-me` |
 | A finished discussion whose decisions are settled | `to-spec` |
 | An existing issue that is missing acceptance criteria | `grill-me`, then `to-spec` writes back into that issue |
-| An existing issue that already carries a test-name list | It is ready to build — but `dev` does not exist yet |
+| A spec issue too big for one session | [`to-tickets`](./to-tickets.md) |
+| A buildable ticket or small unsplit spec issue | [`dev`](./dev.md) |
 
 Planning is allowed to stop at the PRD. Not every piece of work needs an issue,
 and nothing in `grill-me` forces you onward.
@@ -219,20 +257,23 @@ target across a change is one.
 
 ## Current state, honestly
 
-- Four of seven steps exist. The planning chain still has a gap after `to-spec`;
-  code-review can inspect separately prepared changes.
+- Six of seven steps exist. `dev` implements one GitHub issue, respecting
+  `to-tickets` test allocations and native dependencies. Integration QA is still
+  separate and unavailable as a workflow skill.
 - Runtime coverage and remaining checks are recorded on each skill's page.
   An implemented step is not necessarily verified end to end on every tool;
   sharing source files does not establish identical runtime behaviour.
-- The development gates (the hooks that would stop unsafe writes during `dev`)
-  do not exist. `nathan-setup` reports them as unavailable rather than
-  pretending they are installed.
+- Development hooks that mechanically restrict writes do not exist. `dev`
+  supplies a worktree workflow and project validation, not a sandbox. A project
+  requiring missing protections cannot treat that absence as a passed prerequisite.
 
 Each skill's page below carries its own known limitations.
 
 - [nathan-setup](./nathan-setup.md)
 - [grill-me](./grill-me.md)
 - [to-spec](./to-spec.md)
+- [to-tickets](./to-tickets.md)
+- [dev](./dev.md)
 - [code-review](./code-review.md)
 - [accessibility-review](./accessibility-review.md)
 
