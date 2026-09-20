@@ -199,8 +199,7 @@ nathan-setup ─── once per project, before anything else
       ▼
      dev ────────────► a task worktree + verification status
       │
-      ├──► code-review
-      └──► integrate-review ✗ ──► QA report → your call
+      └──► code-review ──► findings per axis → your call
 ```
 
 | Step | Skill | Hands over | Built |
@@ -211,10 +210,13 @@ nathan-setup ─── once per project, before anything else
 | Split it | [`to-tickets`](./to-tickets.md) | Sub-issues and blocking relations | ✅ |
 | Build it | [`dev`](./dev.md) | A task worktree and verification status | ✅ |
 | Review it | [`code-review`](./code-review.md) | Separate Standards, Spec and optional Accessibility findings | ✅ |
-| Verify it | `integrate-review` | A pass / fail / unknown QA report | ✗ |
 
 `to-tickets` hands buildable issues to `dev`; missing criteria still block
-implementation. Integration QA remains a separate step.
+implementation. It also writes the board's order, so the chain ends where it
+began: the next thing to build is the top of the board.
+
+The chain has no QA step, and no step is planned. Integration QA is done by
+hand, outside these skills.
 
 ## Where to start
 
@@ -264,9 +266,9 @@ target across a change is one.
 
 ## Current state, honestly
 
-- Six of seven steps exist. `dev` implements one GitHub issue, respecting
-  `to-tickets` test allocations and native dependencies. Integration QA is still
-  separate and unavailable as a workflow skill.
+- All six steps of the chain exist. `dev` implements one GitHub issue,
+  respecting `to-tickets` test allocations and native dependencies. Integration
+  QA is not part of the chain and is not planned as a skill; it is done by hand.
 - Runtime coverage and remaining checks are recorded on each skill's page.
   An implemented step is not necessarily verified end to end on every tool;
   sharing source files does not establish identical runtime behaviour.
@@ -282,7 +284,8 @@ Each skill's page below carries its own known limitations.
 - [to-tickets](./to-tickets.md)
 - [dev](./dev.md)
 - [code-review](./code-review.md)
-- [accessibility-review](./accessibility-review.md)
+- [accessibility-review](./accessibility-review.md) — off-chain
+- [codebase-scan](./codebase-scan.md) — off-chain
 
 ## Focused accessibility review
 
@@ -292,16 +295,40 @@ uses its shared static criteria for applicable UI diffs. Each skill page states
 its current runtime coverage and limitations.
 
 It needs no prior step and it can stop at its report, which it saves to
-`~/Downloads/a11y-<topic>.md`. When the barriers it finds should be fixed and
-tracked, that file joins the chain at the top:
+`~/Downloads/accessibility-audit-<topic>.md`. When the barriers it finds should
+be fixed and tracked, that file joins the chain at the top:
 
 ```
-accessibility-review ──► ~/Downloads/a11y-<topic>.md
-                                   │
-                                   ▼
-                              grill-me ──► ... (the chain above)
+accessibility-review ──► ~/Downloads/accessibility-audit-<topic>.md
+                                        │
+                                        ▼
+                                   grill-me ──► ... (the chain above)
 ```
 
 It enters at `grill-me`, not at `to-spec`, because a findings list is not a set
 of decisions: which barriers are in scope, in what order, and what "fixed" means
 for each are the user's calls, and `to-spec` only transcribes calls already made.
+
+## Whole-codebase scan
+
+[codebase-scan](./codebase-scan.md) is **not a step of the chain above**. No
+piece of work passes through it, nothing waits on it, and nothing in `dev`,
+`code-review` or `to-tickets` refers to it. It is run by hand, occasionally,
+against a codebase as a whole — "it has been a while, what state is this in?"
+
+It reviews three axes separately — architecture, security and accessibility —
+each with its own coverage rule, and each declaring what it did not look at. Its
+report, like `accessibility-review`'s, joins the chain at the top:
+
+```
+codebase-scan ──► ~/Downloads/code-scan-<project>.md
+                                 │
+                                 ▼
+                            grill-me ──► ... (the chain above)
+```
+
+It enters at `grill-me` for the same reason: a findings list is not a set of
+decisions. Which findings are worth fixing, in what order, and what "fixed"
+means for each are the user's calls, and everything downstream only transcribes
+calls already made. Anything that reaches the tracker reaches it through
+`to-tickets`, which is also where it gets its place in the backlog order.

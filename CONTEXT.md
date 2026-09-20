@@ -21,6 +21,8 @@ current implementation status.
 | Task worktree | The Git checkout assigned to one implementation ticket; it has its own working tree and index but shares refs and is not a sandbox. |
 | Seam | A boundary at which a test can observe behaviour. `to-spec` proposes the seams for the whole spec and obtains the user's confirmation. |
 | Ticket | One sub-issue produced by `to-tickets`: a vertical slice of a spec, carrying the spec's test names for that slice. Tickets are disposable; the spec is not. |
+| Backlog order | The manual item position of open issues on a GitHub Project — the order work is picked up in, top-down. `to-tickets` proposes it and writes it; no label or field restates it. |
+| Codebase scan | A standing-health review of a whole codebase along separate architecture, security and accessibility axes. Occasional and manual; it is not a step of the development workflow and nothing waits on it. |
 | Blocking relation | A GitHub issue dependency stating that one ticket gates another. Native, queryable state — not prose in an issue body. |
 | Verification evidence | Actual commands, outputs and observed artifacts for a stated environment and scenario. Evidence supports only the behaviour exercised. |
 | Changeset | One file in `.changeset/` describing a pending change and its bump. Written per change; consumed and deleted when a release is versioned. |

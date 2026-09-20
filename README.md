@@ -74,6 +74,9 @@ Focused review skills can also be used independently:
   against repository standards, its spec and applicable accessibility criteria.
 - [accessibility-review](./docs/development/accessibility-review.md) reviews a
   supplied design, local UI code or both for accessibility barriers.
+- [codebase-scan](./docs/development/codebase-scan.md) reviews a whole existing
+  codebase along separate architecture, security and accessibility axes, each
+  declaring what it did not cover. Occasional, manual, and outside the chain.
 
 ## Conventions
 
