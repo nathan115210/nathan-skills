@@ -573,8 +573,8 @@ Compare the returned issues against the publish plan the user approved, **matchi
     | diff - "$TMPDIR/to-tickets-<slug>.md"
   ```
 
-  If the scratch file has no trailing newline, account for that one-byte
-  difference before calling the body mismatched.
+  `--jq` appends a trailing newline of its own, so strip that one byte before
+  diffing or every rendered ticket reports a spurious mismatch.
 
   A clean `diff` is the check. Checking that the headings are present is not —
   that is what a body mangled by quoting still looks like.

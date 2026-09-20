@@ -87,10 +87,10 @@ file, `gh issue create --body-file` publishes that file, and afterwards the
 published body is `diff`ed against it. So "the body matches" is a command rather
 than a judgment, and a body mangled by shell quoting cannot slip through looking
 plausible. Step 8 does that read-back with `gh api ... --jq '.body' | diff - ...`:
-`gh api --jq` already writes a scalar string as raw text, but it terminates
-stdout with one transport newline, so a scratch file with no trailing newline
-needs that one-byte difference accounted for rather than being treated as a body
-mismatch. The scratch files are deleted when verification finishes.
+`gh api --jq` appends one trailing newline of its own, so the fetched body is
+always one byte longer than the stored body. Strip that extra newline before
+diffing or every rendered ticket reports a spurious mismatch. The scratch files
+are deleted when verification finishes.
 
 It then reads the issues and dependency graph back from GitHub and compares the
 titles, bodies, test allocation, parent relations, blocking edges and board
