@@ -192,5 +192,6 @@ The rest of this section is design, not evidence.
 ## Where it fits
 
 Upstream is [to-spec](./to-spec.md), which settles the seams and the test names
-this skill only allocates. Downstream is [dev](./dev.md), which implements one buildable GitHub issue. See
+this skill only allocates. Downstream is [dev](./dev.md), which implements one
+buildable GitHub issue. See
 [the workflow overview](./README.md).
