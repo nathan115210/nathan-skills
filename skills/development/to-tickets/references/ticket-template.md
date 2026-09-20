@@ -48,13 +48,22 @@ Rejects an order whose total is negative
 → it('rejects order with negative total')
 ```
 
-**Transcribe only.** Every criterion and every test name here is copied from the spec, unchanged. If no test name in the spec covers this slice, write exactly:
+**Transcribe only.** Every criterion and every test name here is copied from the spec, unchanged. On the scan path there is nothing to transcribe — see the scan-path statement below. If no test name in the spec covers this slice, write exactly:
 
 > No test name in the spec covers this slice. Not buildable — the gap is in the spec, not in this ticket.
 
 That sentence is canonical here. Other steps point at this file for its wording rather than restating it, so it has one copy and cannot drift.
 
-Do not invent a criterion to fill the gap, and do not soften the statement.
+**On the scan path there is no spec at all**, so that sentence would name a
+document that does not exist. Write exactly this instead, on every ticket in the
+batch:
+
+> No spec covers this finding, so it has no acceptance criteria or test names. Not buildable — `grill-me` then `to-spec` on this issue is what makes it buildable.
+
+This sentence is canonical for the same reason, and the two are never mixed: the
+first says a spec left a gap, the second says no spec was ever written.
+
+Do not invent a criterion to fill either gap, and do not soften either statement.
 
 A spec criterion carrying several test names may have them split across slices. Repeat the criterion line in each slice that carries one of its test names, with only that slice's test names under it. The criterion is context for reading the test name; only the test names are exclusive to one slice.
 
@@ -115,16 +124,39 @@ rejected order can be traced back to the value that caused it.
 No test name in the spec covers this slice. Not buildable — the gap is in the spec, not in this ticket.
 ```
 
+And a scan-path ticket, which carries one finding and nothing invented around it:
+
+```markdown
+## What to build
+
+Session tokens are compared with `==` in `auth/session.py:88`, so comparison
+time varies with how much of the token matched. The comparison is constant-time,
+and a token that differs only in its last byte takes the same time to reject as
+one that differs in its first.
+
+## Acceptance criteria and test names
+
+No spec covers this finding, so it has no acceptance criteria or test names. Not buildable — `grill-me` then `to-spec` on this issue is what makes it buildable.
+
+## Notes
+
+Found by `codebase-scan` on the security axis, severity Major, at revision
+`d61a154`. The scan reported it as likely already tracked as #41; that is a
+suspicion, not a match.
+```
+
 ## Rendering contract
 
 Before publication, every preview and final issue body must satisfy all of these:
 
 - `## What to build` appears once and contains the observable end-to-end result.
 - `## Acceptance criteria and test names` appears once and contains only exact
-  criterion/test-name pairs from the spec, or the exact not-buildable statement.
+  criterion/test-name pairs from the spec, or one of the two exact not-buildable
+  statements — the spec-gap one, or the scan-path one.
 - `## Notes`, when present, comes last and contains only load-bearing context.
 - No template instructions, placeholder text, parent prose, blocker prose,
-  labels, status, file paths, or implementation checklist appears in the body.
+  labels, status or implementation checklist appears in the body, and no file
+  path except a scan ticket's own location, carried with its revision.
 - The body read back from GitHub is byte-identical to the scratch file it was
   published from, confirmed with `diff` rather than by reading it.
 
@@ -139,5 +171,10 @@ Before publication, every preview and final issue body must satisfy all of these
 **No status, and no readiness marker.** Whether a ticket is buildable is judged by whether it carries test names. A label, a status line or a Project field would be a second copy of that fact.
 
 **No file paths and no code snippets.** They go stale faster than anything else in a ticket.
+
+*Exception, on the scan path only:* a finding's location is the finding. A scan
+ticket keeps the file and line the scan named, and the revision it was taken at,
+because without them the reader cannot tell what was looked at. It goes stale
+like any path — which is why the revision travels with it.
 
 *Exception:* a snippet that encodes a decision more precisely than prose can — a state machine, a reducer, a schema, a type shape — may be inlined in the section it belongs to. Note that it came from a prototype, and keep only the decision-dense part. This is not a working demo.

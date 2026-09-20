@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Symlink every personal skill in this repo into each AI tool's skills folder.
+# Symlink every personal skill in this repo into each AI tool's skills folder,
+# and remove this clone's own links for skills that no longer exist.
 # Idempotent: safe to run repeatedly. Never deletes anything it did not create.
 set -uo pipefail
 
@@ -16,6 +17,7 @@ TOOL_DIRS=(
 
 linked=0
 skipped=0
+pruned=0
 
 # Absolute physical path of a symlink's target, or empty if it dangles.
 resolve() {
@@ -38,6 +40,30 @@ raw_target_abs() {
     /*) printf '%s\n' "$dest" ;;
     *) printf '%s\n' "$(cd "$(dirname "$link")" 2>/dev/null && pwd -P)/$dest" ;;
   esac
+}
+
+# Does this symlink belong to this clone? Existing targets are resolved
+# physically; a dangling target must be a literal path inside this clone with no
+# traversal and no symlinked ancestor. Kept identical to unlink.sh's owned().
+owned() {
+  local link="$1" dest resolved part
+  dest="$(readlink "$link")" || return 1
+  case "$dest" in
+    /*) ;;
+    *) dest="$(cd "$(dirname "$link")" && pwd -P)/$dest" ;;
+  esac
+  if resolved="$(cd "$dest" 2>/dev/null && pwd -P)"; then
+    case "$resolved" in "$CENTRAL"/*) return 0 ;; *) return 1 ;; esac
+  fi
+  [ ! -e "$dest" ] || return 1
+  case "$dest" in "$CENTRAL"/*) ;; *) return 1 ;; esac
+  case "$dest" in */../*|*/..|*/./*|*/.|*//*) return 1 ;; esac
+  part="$dest"
+  while [ "$part" != "$CENTRAL" ]; do
+    [ ! -L "$part" ] || return 1
+    part="$(dirname "$part")"
+  done
+  return 0
 }
 
 # Discover skill roots recursively, without linking category/resource folders.
@@ -126,6 +152,37 @@ if common_dir="$(linked_worktree_common_dir)"; then
   fi
 fi
 
+# Prune first: a skill that was renamed or removed upstream leaves a link under
+# its old name, and the linking loop below never visits it — that loop walks the
+# skills that exist now. Only links this clone owns and is not about to relink
+# are removed, so a real directory, another source's link, and the Cloudflare
+# pack are all untouched.
+shopt -s dotglob
+for dir in "${TOOL_DIRS[@]}"; do
+  [ -d "$dir" ] || continue
+  for link in "$dir"/*; do
+    [ -L "$link" ] || continue
+    name="$(basename "$link")"
+
+    still_a_skill=0
+    for existing in "${skill_names[@]-}"; do
+      if [ "$existing" = "$name" ]; then still_a_skill=1; break; fi
+    done
+    [ "$still_a_skill" -eq 0 ] || continue
+
+    owned "$link" || continue
+
+    if rm -f "$link"; then
+      echo "  prune $link"
+      pruned=$((pruned + 1))
+    else
+      echo "  FAIL  $link -> could not remove orphaned link"
+      skipped=$((skipped + 1))
+    fi
+  done
+done
+shopt -u dotglob
+
 for src in "${skill_sources[@]-}"; do
   [ -n "$src" ] || continue
   name="$(basename "$src")"
@@ -185,5 +242,5 @@ done
 
 echo
 echo "central: $CENTRAL"
-echo "linked: $linked   skipped: $skipped"
+echo "linked: $linked   pruned: $pruned   skipped: $skipped"
 [ "$skipped" -eq 0 ]

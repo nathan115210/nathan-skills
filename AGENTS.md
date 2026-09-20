@@ -57,8 +57,10 @@ details or personal history from the local decision record.
 
 ## Rules
 
-- **After adding a skill folder, run `./scripts/relink.sh`.** A new skill is invisible
-  to every tool until you do. This is the step that gets forgotten.
+- **After adding, renaming or removing a skill folder, run `./scripts/relink.sh`.**
+  A new skill is invisible to every tool until you do, and a renamed or removed
+  one keeps its old link until the same run prunes it. This is the step that gets
+  forgotten.
 - **Run `relink.sh` from the main checkout, not a `git worktree`.** It derives the
   repository to link from its own location, so a worktree run would repoint every
   tool at that branch. It refuses and links nothing; `--force` overrides when that
@@ -144,9 +146,9 @@ label the guard rejects it. At the same time the pre-1.0 notice at the top of
 2. Update `name:` in the moved skill’s `SKILL.md` to match
 3. Move `docs/<category>/old-name.md` to the new name and update references in
    the docs, category overview, and repository README where present
-4. Delete the stale `old-name` symlink from all three tool folders
-5. `./scripts/relink.sh`
-6. `npm run changeset` — a rename breaks existing setups, so it is **minor**
+4. `./scripts/relink.sh` — it links the new name and prunes the stale `old-name`
+   link from all three tool folders in the same run
+5. `npm run changeset` — a rename breaks existing setups, so it is **minor**
    before 1.0 and `major` after; say both the old and the new name
 
 ## Do not touch
@@ -169,6 +171,11 @@ label the guard rejects it. At the same time the pre-1.0 notice at the top of
 
 `scripts/relink.sh` already refuses to overwrite anything it did not create — it warns,
 skips, and exits non-zero. Never work around that guard by deleting the target.
+
+It does remove one class of link on its own: a link **this clone created** whose
+skill no longer exists, left by a rename or a removal. That is the same
+ownership test `unlink.sh` uses, and it never touches a real directory or a link
+pointing anywhere outside the clone.
 
 ## Uninstall or move
 

@@ -1,6 +1,6 @@
 ---
 name: to-tickets
-description: Split one spec issue into sub-issues carrying native blocking relations — read the spec, cut tracer-bullet slices, allocate its test names, get the breakdown and the resulting backlog order confirmed, then publish to GitHub and write that order back to the Project. No requirements interview, no seam choice, no code.
+description: Split one spec issue into sub-issues carrying native blocking relations — read the spec, cut tracer-bullet slices, allocate its test names, get the breakdown and the resulting backlog order confirmed, then publish to GitHub and write that order back to the Project. Also accepts a codebase-scan findings list confirmed in the same session, publishing it under a tracking parent as not-buildable tickets. No requirements interview, no seam choice, no code.
 disable-model-invocation: true
 disallowed-tools: Write, Edit, NotebookEdit
 ---
@@ -22,17 +22,45 @@ be written without a second entry point to keep in step.
 
 ## Inputs
 
-Exactly one **spec issue**, in this project's tracker, named by number or URL.
+Exactly one of two, and they take different paths through this skill:
 
 | Input | Where it is | How to read it |
 | --- | --- | --- |
-| **A spec issue** — the only case | GitHub, in the repository you are standing in | `gh issue view <n> --comments`. Read the body and the comments. |
+| **A spec issue** — the normal case | GitHub, in the repository you are standing in | `gh issue view <n> --comments`. Read the body and the comments. |
+| **A confirmed `codebase-scan` findings list** — the scan path | In this conversation, where `codebase-scan` just produced it | Read nothing new. The findings are already here; the saved report in `~/Downloads` is their record. |
 
-If the user did not name one, ask. Do not search the tracker for a plausible spec — splitting the wrong issue produces a breakdown that looks right.
+If the user named neither, ask. Do not search the tracker for a plausible spec — splitting the wrong issue produces a breakdown that looks right.
 
-**Do not accept a file.** A planning PRD is `grill-me`'s output and `to-spec`'s input; it is expected to be stale by now. If the user offers a document instead of an issue, the missing step is `to-spec`, in its own session.
+**Do not accept a file as a spec.** A planning PRD is `grill-me`'s output and `to-spec`'s input; it is expected to be stale by now. If the user offers a document instead of an issue, the missing step is `to-spec`, in its own session.
 
 The body holds the specification; the comments hold process records. Both are input — a correction that arrived as a comment is still a decision.
+
+### The scan path
+
+`codebase-scan` is not a step of this workflow and produces no spec. Its report
+is a findings list, and a findings list has no seams and no test names — so every
+ticket this path publishes is **not buildable**, by construction, and says so in
+its own body. That is the honest result, not a gap to fill: the tickets record
+what was found and where it sits in the backlog order, and `grill-me` then
+`to-spec` is what makes any one of them buildable.
+
+This path is available only when `codebase-scan` produced those findings **in
+this same session** and the user has said which of them become tickets. A report
+file handed over in a fresh session is not this input — its decisions were never
+made, so it enters at `grill-me`.
+
+Four things differ from the spec path. Nothing else does:
+
+| | Spec path | Scan path |
+| --- | --- | --- |
+| The parent | The spec issue, already in the tracker | A tracking issue you create in step 0 |
+| Step 1's gate | The body must carry Seams and Acceptance Criteria | Skipped — there is no spec to check |
+| Cutting, step 3 | Slices cut from the spec | One finding, one ticket. Never merged, never subdivided |
+| Test names, step 4 | Allocated from the spec | None exist; every ticket carries the not-buildable statement |
+
+Step 2's codebase exploration, step 5's approval, step 7's ordering and steps
+6–8's publication and read-back are identical. The proposed order follows the
+scan's own severity ranking, adjusted so every blocker precedes what it blocks.
 
 ### What the spec already settled, and you do not revisit
 
@@ -96,6 +124,20 @@ gh repo view --json nameWithOwner,viewerPermission -q '.nameWithOwner + " " + .v
 
 In the last two cases, **do not fall back to writing tickets to files.** Print the proposed breakdown in this conversation so the user can place it themselves, and say plainly that nothing was published. An unpublished breakdown is a blocked step, not a reason to change medium.
 
+**On the scan path, create the tracking parent now** — after the writable check,
+before anything else. It is one issue, and its body is the scan's own record:
+
+- **Title** — `Codebase scan: <project> @ <short revision>`.
+- **Body** — the report's identity header, its scope line and its per-axis
+  not-covered declarations, verbatim; then the absolute path of the saved
+  report, labelled as a scratch file that is not version-controlled.
+- **Nothing else.** The findings do not go in the body — each one is a child, and
+  a copy of it here is the second record this skill exists to avoid.
+
+Show that body and get it approved before creating the issue. The parent is a
+container and a provenance record, not a ticket; `dev` never picks it up. Say its
+number once it exists, and treat it as the parent everywhere below.
+
 Then check the parent has not already been split:
 
 ```
@@ -133,6 +175,10 @@ unavailable, and the new issues arrive in the one place the user will not look.
 
 ### 1. Read the spec, and state what it can support
 
+**Spec path only — skip this check on the scan path**, where there is no spec
+to check, the seams are none and the test names are none. State those three
+facts in one line instead, then go on to the Project question below.
+
 First check the issue is a spec at all. A `to-spec` spec carries a **Seams**
 section and an **Acceptance Criteria and Test Names** section. If the body has
 neither, **stop**: this is an ordinary issue, and splitting it would mean
@@ -148,7 +194,14 @@ Then read the body and the comments, and state, one line each:
 - Whether the spec carries acceptance criteria with test names, or carries `to-spec`'s statement that none were settled.
 - The Project the new issues will join, or that there is none.
 
-**The destination Project is inherited from the parent, never chosen and never asked for.** Whatever board the spec issue is already on is where its children go; if the parent is on no board, the children go on none. That rule needs no configuration, cannot pick the wrong board, and gives the user an opt-out they already control — leave the spec issue off a board and nothing is placed.
+**The destination Project is inherited from the parent, never chosen and never asked for.** Whatever board the spec issue is already on is where its children go; if the parent is on no board, the children go on none.
+
+**The scan path is the one exception, and it is asked once, about the parent.**
+A tracking issue created moments ago is on no board, so there is nothing to
+inherit, and inheriting nothing would put a whole scan's worth of tickets where
+the user does not look. Ask which Project the tracking parent joins, or none,
+place the parent there, and from that point the rule above applies unchanged —
+the children inherit from the parent like any other run. That rule needs no configuration, cannot pick the wrong board, and gives the user an opt-out they already control — leave the spec issue off a board and nothing is placed.
 
 ```
 gh api graphql -f query='
@@ -176,6 +229,14 @@ Find the current state of the area, the vocabulary already in use, and any conve
 Look for **prefactoring** — a change that makes the real change easy. Make the change easy, then make the easy change. A prefactor is its own ticket, and it blocks the slices that need it.
 
 ### 3. Cut vertical slices
+
+**On the scan path there is no cutting.** One finding is one ticket, in the
+scan's own words and at the location it named. Do not merge two findings that
+look related, do not subdivide one into layers, and do not invent a slice no
+finding produced — the severity ranking and the axis boundaries are the scan's
+result, and re-cutting them silently rewrites it. Blocking edges still apply
+where one finding genuinely gates another, and a prefactor is still its own
+ticket. Then go to step 4.
 
 Each ticket is a **tracer bullet**:
 
@@ -208,6 +269,7 @@ Then three cases, all of which must be handled:
 | A slice carries at least one test name | It is buildable. Nothing extra to say. |
 | A slice carries none | Write the not-buildable statement in its body, in the exact words `references/ticket-template.md` gives. Do not paraphrase it from memory — the template holds the wording. |
 | A test name fits no slice | Report it in step 5 and do not drop it. Either the cut is wrong or the spec specifies something outside its own scope. Both are the user's call. |
+| **Scan path: no test names exist at all** | Every ticket carries the not-buildable statement, in the template's exact words. Say so once in step 5 as a property of the batch rather than repeating it per ticket, and do not treat it as a failure — a findings list cannot settle acceptance criteria. |
 
 **Do not invent a test name to close any of these gaps**, and do not soften the not-buildable line. Whoever picks the ticket up needs to know the gap exists before they start.
 
@@ -507,9 +569,12 @@ Compare the returned issues against the publish plan the user approved, **matchi
   **mechanically against its scratch file**, not by reading it:
 
   ```
-  gh api repos/<owner>/<repo>/issues/<number> --jq -r '.body' \
+  gh api repos/<owner>/<repo>/issues/<number> --jq '.body' \
     | diff - "$TMPDIR/to-tickets-<slug>.md"
   ```
+
+  `--jq` appends a trailing newline of its own, so strip that one byte before
+  diffing or every rendered ticket reports a spurious mismatch.
 
   A clean `diff` is the check. Checking that the headings are present is not —
   that is what a body mangled by quoting still looks like.
@@ -546,6 +611,11 @@ them behind creates the second record this skill exists to avoid.
 Say plainly what comes next: work down the board from the top, and run `dev` on
 the first buildable ticket on it. A ticket marked not buildable needs `grill-me` and `to-spec` again before implementation; splitting did not settle its missing criteria.
 
+On the scan path that covers every ticket published, so say it once about the
+batch: these are tracked and ordered, none is buildable, and the top one becomes
+buildable by running `grill-me` on it in a new session and then `to-spec` back
+into that same issue.
+
 Then print one ready-to-paste line, with the numbers you just created filled in, for assigning the batch to a milestone:
 
 ```
@@ -558,17 +628,18 @@ Do not invoke anything. Skills in this workflow are not chained inside one sessi
 
 ## Verification
 
-- Exactly one spec issue was the input, and it was named at the start — not reconstructed at the end.
+- Exactly one input was named at the start — a spec issue, or a `codebase-scan` findings list confirmed in this same session — not reconstructed at the end.
 - The parent was confirmed to have no sub-issues before any work was done.
 - Its comments were read, not only its body.
 - The tracker was confirmed writable before the work was done.
-- The seams were quoted from the spec. None were added, moved or re-chosen.
+- The seams were quoted from the spec, and none were added, moved or re-chosen — or, on the scan path, the absence of a spec, of seams and of test names was stated before any ticket was cut.
 - The codebase was explored before the slices were cut.
 - Every slice is vertical, verifiable on its own, and observable at a seam the spec chose — or is an explicitly sequenced expand–contract step.
 - Every test name in the spec landed on exactly one ticket, as written. None were invented, none were silently dropped, and any that fitted no slice were reported.
 - Every ticket without a test name carries the not-buildable line.
 - The Combined Behavior list stayed on the parent.
-- The input was confirmed to be a `to-spec` spec — it carried a Seams section and an Acceptance Criteria section — before it was split.
+- On the spec path, the input was confirmed to be a `to-spec` spec — it carried a Seams section and an Acceptance Criteria section — before it was split.
+- On the scan path, the tracking parent was created from the report's own header, scope line and not-covered declarations, carried no findings in its body, and was approved before creation; every child is exactly one finding, unmerged and unsubdivided, and carries the not-buildable statement.
 - Every ticket title is distinct.
 - The breakdown was approved by the user before anything was published.
 - The approved breakdown included each ticket's complete rendered body, every issue was created from that same scratch file rather than from a retyped body, and every published body was compared to its file with `diff`.
@@ -577,7 +648,7 @@ Do not invoke anything. Skills in this workflow are not chained inside one sessi
 - Both relations were written by `id`. The graph was read back and compared node by node, and no blocker belongs to another repository.
 - Every created title and complete body was read back and matched against the
   approved preview; any repair was read back once more.
-- The destination Project was inherited from the parent, not chosen or asked for, and was named in the preview before approval.
+- The destination Project was inherited from the parent, not chosen or asked for, and was named in the preview before approval. On the scan path, the one board question asked was about the tracking parent, and the children inherited from it.
 - Every ticket was read back as being on that Project and on no other; an unplaced ticket was reported, with the command to place it.
 - The whole board was read in `POSITION` order, paged to the end, before the order was proposed.
 - The preview showed the complete post-insert order of every open issue, not only where the new tickets landed, and named every existing issue that moved and the edge that moved it.

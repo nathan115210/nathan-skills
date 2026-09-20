@@ -42,6 +42,55 @@ class RelinkTests(unittest.TestCase):
                 self.assertEqual([p.name for p in root.iterdir()], ['example'])
                 self.assertEqual((root / 'example').resolve(), self.skill)
 
+    def test_prunes_links_for_a_renamed_skill(self):
+        self.assertEqual(self.run_relink().returncode, 0)
+        (self.skill).rename(self.repo / 'skills/development/renamed')
+        result = self.run_relink()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('prune', result.stdout)
+        for folder in ROOTS:
+            root = self.home / folder
+            self.assertEqual(sorted(p.name for p in root.iterdir()), ['renamed'])
+            self.assertTrue((root / 'renamed').resolve().exists())
+
+    def test_prunes_links_for_a_removed_skill(self):
+        second = self.add_skill('development/second')
+        self.assertEqual(self.run_relink().returncode, 0)
+        shutil.rmtree(second)
+        result = self.run_relink()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        for folder in ROOTS:
+            root = self.home / folder
+            self.assertEqual(sorted(p.name for p in root.iterdir()), ['example'])
+
+    def test_prune_spares_real_directories_and_foreign_links(self):
+        self.assertEqual(self.run_relink().returncode, 0)
+        outsider = self.base / 'someone-elses-pack'
+        (outsider / 'cloudflare').mkdir(parents=True)
+        for folder in ROOTS:
+            root = self.home / folder
+            (root / 'real-pack').mkdir()
+            (root / 'foreign').symlink_to(outsider / 'cloudflare')
+        self.skill.rename(self.repo / 'skills/development/renamed')
+        result = self.run_relink()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        for folder in ROOTS:
+            root = self.home / folder
+            self.assertEqual(sorted(p.name for p in root.iterdir()),
+                             ['foreign', 'real-pack', 'renamed'])
+            self.assertTrue((root / 'real-pack').is_dir())
+            self.assertEqual((root / 'foreign').resolve(), outsider / 'cloudflare')
+
+    def test_prune_leaves_a_dangling_link_pointing_outside_the_clone(self):
+        self.assertEqual(self.run_relink().returncode, 0)
+        for folder in ROOTS:
+            (self.home / folder / 'elsewhere').symlink_to(self.base / 'gone')
+        result = self.run_relink()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        for folder in ROOTS:
+            root = self.home / folder
+            self.assertTrue((root / 'elsewhere').is_symlink())
+
     def test_migrates_owned_old_root_links(self):
         for folder in ROOTS:
             root = self.home / folder

@@ -5,7 +5,9 @@
 ## What it does
 
 Takes **one** spec issue and turns it into sub-issues, each carrying native
-blocking relations, on GitHub.
+blocking relations, on GitHub. It also has a second, narrower entrance — a
+[codebase-scan](./codebase-scan.md) findings list confirmed in the same session.
+See [the scan path](#the-scan-path).
 
 Four things happen here that happen nowhere else in the chain: the work gets
 cut into slices, the spec's test names get allocated to those slices, the slices
@@ -25,6 +27,7 @@ You type it. It will not fire on its own.
 | Decisions settled, nothing tracked yet | [to-spec](./to-spec.md) first |
 | A spec issue exists and the work is too big for one session | `to-tickets` |
 | A spec issue exists and you will finish it in one sitting | Nothing — splitting buys you nothing here |
+| `codebase-scan` just finished and you want its findings on the board | `to-tickets`, right there in that session |
 
 Run it in a **fresh session**, pointed at the issue number. It re-reads the
 issue rather than trusting a conversation, because the spec is the maintained
@@ -83,7 +86,11 @@ rendered once into a scratch file outside the repository; the preview is that
 file, `gh issue create --body-file` publishes that file, and afterwards the
 published body is `diff`ed against it. So "the body matches" is a command rather
 than a judgment, and a body mangled by shell quoting cannot slip through looking
-plausible. The scratch files are deleted when verification finishes.
+plausible. Step 8 does that read-back with `gh api ... --jq '.body' | diff - ...`:
+`gh api --jq` appends one trailing newline of its own, so the fetched body is
+always one byte longer than the stored body. Strip that extra newline before
+diffing or every rendered ticket reports a spurious mismatch. The scratch files
+are deleted when verification finishes.
 
 It then reads the issues and dependency graph back from GitHub and compares the
 titles, bodies, test allocation, parent relations, blocking edges and board
@@ -106,13 +113,54 @@ read-back; a remaining mismatch is reported as a partial publish.
   spec has.
 - **Nothing invented.** A slice no test name covers says so outright: *"No test
   name in the spec covers this slice. Not buildable — the gap is in the spec,
-  not in this ticket."*
+  not in this ticket."* A scan ticket says the other version — no spec covers it
+  at all — and carries the finding's file, line and revision, which is the one
+  place a path is allowed in a body.
+
+## The scan path
+
+`codebase-scan` is not part of the chain and produces no spec. Its report used
+to reach the tracker only through `grill-me` and `to-spec`, which meant a full
+interview before anything was written down — expensive, and wrong when the
+findings themselves are not in dispute and you just want them tracked.
+
+So `to-tickets` takes that findings list directly, in the **same session that
+produced it**, once you have said which findings count. It:
+
+- creates **one tracking parent**, `Codebase scan: <project> @ <revision>`,
+  holding the report's identity header, scope line and per-axis not-covered
+  declarations, and the path of the saved report — and none of the findings;
+- creates **one child per finding**, unmerged and unsubdivided, in the scan's
+  own words and at the location it named;
+- marks **every one of them not buildable**, because a findings list has no
+  acceptance criteria and no test names;
+- orders the board by the scan's own severity ranking, blockers first, in the
+  same approval as the bodies.
+
+Everything else — exploring the codebase, the approval gate, publication, the
+`diff` read-back — is the same run as the spec path.
+
+**Nothing published this way is buildable, and that is not a defect.** These
+tickets record what was found and where it sits in the queue. To start one, run
+`grill-me` on that issue in a new session and `to-spec` back into it; that is
+where the interview happens, once, for the finding you actually decided to fix.
+
+Two things it will not do: it will not take a scan report handed over in a fresh
+session (that report's decisions were never made — it enters at `grill-me`), and
+it will not ticket the whole candidate list because you approved something else.
+You name the findings.
 
 ## Which Project the tickets land on
 
 Whatever board the **parent spec issue** is already on. The skill never chooses
 one and never asks — it reads the parent's `projectItems` and places every child
 on the same boards. Parent on no board, children on no board.
+
+**The scan path asks once**, and only about the tracking parent it just created,
+which is on no board by definition. Answer with a board or with "none"; from
+there the children inherit from the parent exactly as above. This is the single
+question this skill asks about Projects, and it exists because inheriting nothing
+would drop a whole scan's worth of tickets somewhere you never look.
 
 That is a deliberate non-choice. Asking would produce the same answer every time;
 storing the answer in a config file would be a second copy that drifts from the
@@ -188,7 +236,16 @@ than counts, and why it checks that every blocker lives in this repository.
 
 **Can I point it at the PRD instead of the issue?**
 No. It takes an issue. If you only have a document, the missing step is
-[to-spec](./to-spec.md), in its own session.
+[to-spec](./to-spec.md), in its own session. A `codebase-scan` findings list is
+the one exception, and only in the session that produced it — see
+[the scan path](#the-scan-path).
+
+**Do I have to run `grill-me` on every scan finding before it can be tracked?**
+No, not any more. Tracking and deciding are separate: the scan path writes the
+findings to the board as not-buildable tickets without an interview, and
+`grill-me` happens later, on the one ticket you are about to start. Run
+`grill-me` first only when *which* findings are worth fixing is itself the
+question.
 
 **My spec has no test names. Will it refuse?**
 No. It splits anyway and marks every ticket not buildable. Splitting an
@@ -258,7 +315,12 @@ ticket marked not buildable.
   then asking. Each proposed ticket includes the exact body GitHub will receive.
 - Every test name you remember deciding lands on exactly one ticket, unchanged.
 - It names the destination board in the preview, before you approve — or says
-  there is none, and why.
+  there is none, and why. On the scan path it asks that once, about the tracking
+  parent, and never again.
+- On the scan path: one parent holding the report's header and gaps but no
+  findings, one child per finding you named and no others, every child marked
+  not buildable, and severity order preserved except where a blocker forced a
+  move.
 - The preview shows the complete post-insert order of every open issue on that
   board, not just where the new tickets landed, and names any existing issue it
   wants to move and the edge that moves it.
@@ -334,15 +396,42 @@ validation — it reaches execution and fails only on a missing issue number —
 no run has seen that exact query return a populated graph. Low risk, and not
 zero.
 
-**Untested.** No end-to-end run of the skill has been recorded in any tool.
-Discovery, the input check, the codebase exploration, the cut, the allocation of
-test names, the confirmation step and the handoff are unverified in Claude Code,
-Codex and agy. Only the API mechanics the skill depends on have evidence, and a
-skill can fail for reasons that have nothing to do with its API calls — a
-frontmatter field a tool parses differently, a step the model skips, a
-confirmation it does not actually wait for. The cheapest part of this gap to
-close is discovery: open a fresh session and see whether the tool offers
-`/to-tickets`.
+**Verified end-to-end, scan path only** — 2026-09-20, Claude Code 2.1.278,
+`gh` 2.80.0, against this repository. A `codebase-scan` findings list confirmed
+in the same session produced tracking parent #18 and 16 children, #19-#34, with
+one blocking edge (#30 blocked by #20). Everything the scan path specifies held:
+the parent carried the scan's header, scope and not-covered declarations and no
+findings; each child is exactly one finding, unmerged and unsubdivided; all 16
+carry the not-buildable statement; the Seams/Acceptance-Criteria gate was
+skipped with the absence of a spec stated first; the board question was asked
+once about the parent. The read-back returned 16 sub-issues with
+`hasNextPage: false`, one edge whose blocker is in this repository, and all 17
+titles and bodies byte-identical to the approved scratch files under `diff`. No
+label, Status or other field was set on anything, and the target repository's
+working tree was unchanged.
+
+**Two defects in this page's own instructions, found by running them.** Both are
+in step 8, the step that makes a publish verifiable:
+
+- `gh api … --jq -r '.body'` fails with `accepts 1 arg(s), received 2`, because
+  `--jq` takes one argument and `-r` is read as a second. It returns an empty
+  body, which then "differs" from every scratch file — a total false alarm that
+  looks exactly like a catastrophic publish failure. The working form is
+  `--jq '.body'`.
+- That form appends one trailing newline of its own, so a naive `diff` reports a
+  spurious one-line difference on every ticket. The comparison has to strip it.
+
+Both were hit verbatim, twice, in this run.
+
+**Still untested.** The **spec path** — the normal one — has no end-to-end run:
+reading a real `to-spec` spec, quoting its seams, cutting vertical slices and
+allocating test names are all unverified. So is **board placement and the whole
+of step 7's ordering**, because the run deliberately chose no board; that
+remains the least verified part of this skill, now for the second reason. Codex
+and agy are untested throughout, as is the handoff to `dev`. A skill can fail
+for reasons that have nothing to do with its API calls — a frontmatter field a
+tool parses differently, a step the model skips, a confirmation it does not
+actually wait for.
 
 The rest of this section is design, not evidence.
 
@@ -368,6 +457,12 @@ The rest of this section is design, not evidence.
   on no board cannot be positioned; the skill names those issues rather than
   ordering them, and putting them on the board is your call.
 - The handoff to `dev` has not been runtime-verified end to end.
+- The template has **no canonical wording for a ticket that records an open
+  question** — one that is neither a spec gap nor a scan finding. Issues #35-#38
+  in this repository were published with an invented third sentence, which is
+  not sanctioned by `references/ticket-template.md`. Either that path gets a
+  sanctioned form or it stays outside this skill; leaving it undecided invites
+  the next person to copy whatever they find.
 
 ## Where it fits
 
