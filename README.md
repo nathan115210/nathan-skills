@@ -4,8 +4,9 @@
 > integration QA does not exist yet. Implementation and
 > focused reviews can be used independently. Until there is a `1.0.0`
 > release, skill names, their inputs and their outcomes can change without a
-> deprecation path, and the way other people install this is still undecided —
-> `relink.sh` is built for the author's own machine. Read it, copy from it, open
+> deprecation path. Install, update and uninstall now have a documented path,
+> but `relink.sh` is still built for the author's own machine and assumes its
+> three tool folders. Read it, copy from it, open
 > an issue; just don't wire it into anything you rely on yet.
 
 One source of truth for a personal set of AI coding skills, shared across
@@ -33,6 +34,27 @@ It never overwrites anything it did not create — it warns, skips that name, an
 exits non-zero. A skipped name means the tools are running some other copy of
 that skill, so the exit code is worth reading. **[Installing, and checking it
 took →](./docs/development/README.md#install-and-check-it-took)**
+
+## Update
+
+```bash
+cd nathan-skills        # wherever the clone lives
+git pull
+./scripts/relink.sh
+```
+
+`git pull` alone is enough for a skill whose **contents** changed — the tools
+follow a symlink to the file, so there is no copy to refresh. Rerun
+`relink.sh` when a skill was **added, renamed or removed**, and when you do not
+know which, since it is idempotent and takes a second.
+
+`relink.sh` links what exists now and removes this clone's links for skills that
+no longer do, so a rename leaves nothing behind. It only ever removes a link it
+owns: a real directory is untouched, and so is a symlink pointing anywhere
+outside this clone — the Cloudflare pack survives the cycle.
+
+`python3 scripts/instructions.py install` does not need rerunning: it installs
+symlinks too, so an edited `instructions/communication.md` is already live.
 
 ## Uninstall or move the clone
 

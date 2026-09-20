@@ -28,6 +28,15 @@ Run it after **adding a skill folder** or **setting up a new machine**. Editing
 an existing skill needs no rerun: the tools already point at these files, so a
 save is live everywhere at once.
 
+**Updating a clone is `git pull`, then `relink.sh`** — see
+[Update](../../README.md#update). The same run links what is new and prunes this
+clone's links for skills that no longer exist, so a rename leaves nothing behind.
+Verified 2026-09-21 in an isolated `HOME`: a renamed skill and a removed skill
+each left the tool folders holding exactly the current set with no dangling
+links, while a real directory, a link into another source, and a dangling link
+pointing outside the clone were all left untouched. Covered by
+`scripts/test_relink.py`.
+
 ### Reading the output
 
 ```
@@ -35,12 +44,13 @@ save is live everywhere at once.
   SKIP  /Users/you/.claude/skills/code-review -> symlink points outside this repo (...)
 
 central: /Users/you/dev/nathan-skills
-linked: 9   skipped: 6
+linked: 9   pruned: 0   skipped: 6
 ```
 
 | Line | Means |
 | --- | --- |
 | `link` | Installed. Every skill is relinked on every run, so these always appear. |
+| `prune` | A link this clone created whose skill no longer exists — left by a rename or a removal — has been removed. |
 | `SKIP` | Something already holds that name and this script did not create it. Nothing was touched. |
 | `exit 1` | At least one `SKIP`. Not a crash — the signal that something did not install. |
 | `ERROR` | Refused before touching anything. The only cause today is running it from a linked git worktree — see below. |
@@ -323,12 +333,23 @@ report, like `accessibility-review`'s, joins the chain at the top:
 ```
 codebase-scan ──► ~/Downloads/code-scan-<project>.md
                                  │
-                                 ▼
-                            grill-me ──► ... (the chain above)
+              ┌──────────────────┴──────────────────┐
+              ▼                                     ▼
+         to-tickets                            grill-me ──► ... (the chain above)
+   (same session, findings you
+    name; all not buildable)
 ```
 
-It enters at `grill-me` for the same reason: a findings list is not a set of
-decisions. Which findings are worth fixing, in what order, and what "fixed"
-means for each are the user's calls, and everything downstream only transcribes
-calls already made. Anything that reaches the tracker reaches it through
-`to-tickets`, which is also where it gets its place in the backlog order.
+Unlike `accessibility-review`, it has a second exit, and it is the short one.
+When the findings themselves are not in dispute and you only want them on the
+board, `to-tickets` takes the confirmed list **in the same session** — one
+tracking parent for the scan, one child per finding, every child marked not
+buildable, ordered by the scan's severity. That writes down what was found
+without an interview, and leaves what to do about it open.
+
+It still enters at `grill-me` when the open question is *which* findings are
+worth fixing, in what order, and what "fixed" means for each — those are the
+user's calls and everything downstream only transcribes calls already made. And
+a ticket the short path produced is not buildable: `grill-me` then `to-spec` on
+that one issue is what makes it so. Either way anything that reaches the tracker
+reaches it through `to-tickets`, which is also where it gets its backlog place.

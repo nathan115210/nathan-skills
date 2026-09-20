@@ -56,11 +56,18 @@ the reason the report carries an identity header: nothing in a scratch directory
 says which project it came from.
 
 **Does it create issues?**
-No, and it sets no field on the board. It reads the open issues once, to
-annotate each candidate as *likely already tracked as #N* or *no matching
-issue*. The annotation is a suspicion — matching a finding to an issue title is
-fuzzy — and it is phrased as one. Findings reach the tracker the way everything
-else does: `grill-me`, then `to-spec`, then `to-tickets`.
+Not while scanning, and it sets no field on the board. It reads the open issues
+once, to annotate each candidate as *likely already tracked as #N* or *no
+matching issue*. The annotation is a suspicion — matching a finding to an issue
+title is fuzzy — and it is phrased as one.
+
+Afterwards, it offers to. See [After the report](#after-the-report).
+
+**Do I have to run `grill-me` on the report before anything can be tracked?**
+No. That was the old single exit and it made tracking a finding cost a whole
+interview. Say which findings you want tracked and run
+[to-tickets](./to-tickets.md) in the same session; the interview moves to the
+one ticket you later decide to start.
 
 **Can I make it use a stronger model?**
 Not from the skill. `SKILL.md` has no model field, and naming a provider's model
@@ -75,6 +82,24 @@ Read the not-covered lists. A short findings list with honest, specific gaps is
 a real result. A short findings list with an empty not-covered list is the
 failure to distrust.
 
+## After the report
+
+The report ends by offering two ways forward and then stopping. It picks
+neither for you.
+
+| You want | Run | You get |
+| --- | --- | --- |
+| These findings on the board now | [to-tickets](./to-tickets.md), here in this session | A tracking parent for this scan, one child per finding you named, all marked not buildable, ordered by severity |
+| To decide what is worth fixing first | [grill-me](./grill-me.md) on the report, in a **new** session | The normal chain: `grill-me` → `to-spec` → `to-tickets` |
+
+The first is cheap and writes nothing down that the scan did not already find —
+no ticket from it is buildable, and it says so in every body. Reach for the
+second when the open question is which findings matter, not where they live.
+
+The scan itself never writes to the tracker either way: on the short path the
+writes happen inside `to-tickets`, after the report is saved and after you have
+named the findings.
+
 ## It's working if
 
 - The report names the project, the revision, and what was excluded.
@@ -83,7 +108,8 @@ failure to distrust.
   enumerated file list for accessibility.
 - The candidate list is severity-ordered and every entry carries a suspected
   issue number or "no matching issue".
-- Nothing inside the scanned repository changed, and the tracker is untouched.
+- Nothing inside the scanned repository changed, and the tracker is untouched
+  by the scan itself — it ends by offering, not by creating issues.
 - An axis with nothing to scan (a repository with no UI) says so rather than
   passing silently.
 
@@ -112,6 +138,7 @@ not sign-off on anything.
 ## Where it fits
 
 Outside the chain. It has no input artifact and no predecessor, and its output
-flows back to the top: `grill-me` on the saved report, in a new session, when
-the findings are worth acting on. See the [overview](./README.md) for the chain
-it is deliberately not part of.
+has two exits: `to-tickets` in the same session to track the findings as-is, or
+`grill-me` on the saved report in a new session when what to fix is still open.
+See [After the report](#after-the-report), and the [overview](./README.md) for
+the chain it is deliberately not part of.
