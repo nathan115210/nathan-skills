@@ -47,6 +47,7 @@ Seam count is a whole-codebase property, which is why it is settled once per spe
 - Read code, history, and existing issues.
 - Cut the slices and their blocking edges, and get them confirmed.
 - Create the sub-issues and both kinds of relation.
+- Put each new issue in the Project the parent is already in, when it is in one.
 - Mark every slice the spec cannot make buildable.
 
 **Not yours:**
@@ -55,9 +56,13 @@ Seam count is a whole-codebase property, which is why it is settled once per spe
 - **Choosing, adding or moving seams.** `to-spec` is the only place seams are decided.
 - **Inventing acceptance criteria or test names.** The user sets what counts as correct. You transcribe and allocate.
 - **Writing any document.** No `.md` file, no `.scratch/` directory, no local file per ticket. The only exit is issues. A ticket in a file is the second record this workflow exists to avoid.
+
+  *One narrow exception, and it is transport rather than a record:* the approved body of each ticket is held in a scratch file under `$TMPDIR` between step 5 and the end of step 7, so that the text you show the user, the text GitHub receives, and the text you compare against afterwards are one string rather than three transcriptions of it. Those files live outside the repository, are never a source of truth after publication, and are deleted at the end of step 7. Writing a ticket anywhere inside the repository is still forbidden.
 - **Touching code or git.** No edits, no worktree, no spike, no commit, no push.
 - **Rewriting the parent.** You attach children to it. You do not edit its body, change its title, or close it.
-- **Labels and Projects.** No readiness label, no Project, no Project field. Readiness is judged by whether a ticket carries test names; a label would be a second copy of that fact and would drift from it.
+- **Labels, and Project fields.** No readiness label; no Status, Priority or Size; no custom field of any kind. Readiness is judged by whether a ticket carries test names, and a label or a field would be a second copy of that fact that drifts from it. Setting a field is also the user's first pass over their own board, not yours.
+
+Project **membership** is not in that list, and is deliberately not treated like a label. Putting an issue on a board copies no fact — it does not restate the test names, the parent relation or the blocking edges — so there is nothing for it to drift from. It is a view, and it is the user's view of this work.
 
 ## Process
 
@@ -79,12 +84,72 @@ gh repo view --json nameWithOwner,viewerPermission -q '.nameWithOwner + " " + .v
 
 In the last two cases, **do not fall back to writing tickets to files.** Print the proposed breakdown in this conversation so the user can place it themselves, and say plainly that nothing was published. An unpublished breakdown is a blocked step, not a reason to change medium.
 
+Then check the parent has not already been split:
+
+```
+gh api graphql -f query='
+{ repository(owner:"<owner>", name:"<repo>") {
+    issue(number: <parent number>) { subIssues(first: 1) { totalCount } }
+} }' --jq '.data.repository.issue.subIssues.totalCount'
+```
+
+**Anything other than `0` stops you.** There is no re-split and no reconciliation
+here: publishing again creates a second complete set of children beside the
+first. Say how many children the parent already has, list them, and let the user
+decide — finish an interrupted run by hand, unpick the first set, or split a
+different issue. Do not offer to "add the missing ones"; you cannot tell which
+are missing without the first run's approved plan, and it is gone.
+
+This check exists because the natural response to any failure in step 6 — a
+dropped connection, a rate limit, a closed session — is to run the skill again,
+and that is exactly the action that doubles the breakdown.
+
+Then check the token can write to Projects, because step 6 may need to:
+
+```
+gh auth status 2>&1 | grep 'Token scopes'
+```
+
+**`repo` does not cover Projects v2; `project` is a separate scope.** A token
+without it passes every check above and then fails at `gh project item-add` —
+after the issues already exist. If `project` is missing, say so here and give the
+user the fix (`gh auth refresh -s project`). Do not stop for it: the issues and
+their relations are the deliverable, and the board is not. Carry the gap into
+step 5 so the user approves a breakdown knowing it will not be placed.
+
 ### 1. Read the spec, and state what it can support
 
-Read the body and the comments. Then state, one line each:
+First check the issue is a spec at all. A `to-spec` spec carries a **Seams**
+section and an **Acceptance Criteria and Test Names** section. If the body has
+neither, **stop**: this is an ordinary issue, and splitting it would mean
+inferring seams from prose — the one thing this skill must never do. Say which
+sections are missing and that the step in front of you is `to-spec`.
+
+A spec that has both sections but no test names under the second is a different
+case entirely, and it does not stop you — see below.
+
+Then read the body and the comments, and state, one line each:
 
 - The seams, as the spec named them.
 - Whether the spec carries acceptance criteria with test names, or carries `to-spec`'s statement that none were settled.
+- The Project the new issues will join, or that there is none.
+
+**The destination Project is inherited from the parent, never chosen and never asked for.** Whatever board the spec issue is already on is where its children go; if the parent is on no board, the children go on none. That rule needs no configuration, cannot pick the wrong board, and gives the user an opt-out they already control — leave the spec issue off a board and nothing is placed.
+
+```
+gh api graphql -f query='
+{ repository(owner:"<owner>", name:"<repo>") {
+    issue(number: <parent number>) {
+      projectItems(first: 10) { nodes { project {
+        number title owner { __typename ... on User { login } ... on Organization { login } }
+      } } }
+    }
+} }' --jq '.data.repository.issue.projectItems.nodes[].project'
+```
+
+**Use this query, not `gh issue view --json projectItems`.** The CLI field returns only the project's `title` and the item's field values — no `number`, no `owner` — and `gh project item-add` needs both. Take the owner `login` from the parent's own item rather than from the repository: a personal Project can hold issues from an organization repository, so the repository owner is not reliably the Project owner.
+
+If the parent is on more than one board, put the children on all of them, and say which in step 5.
 
 **A spec with no test names is still worth splitting, and splitting it does not make it buildable.** Cut the slices, then say so per ticket in step 4. Do not stop, and do not fill the gap — `to-spec` deliberately left it visible.
 
@@ -120,12 +185,14 @@ When even the batches cannot stay green alone, keep the sequence but say plainly
 
 Every test name in the spec's Acceptance Criteria section goes to **exactly one** slice, **as written**. Keep the spec's own shape — the criterion, then the test name it maps to — so the trace back to the spec stays visible.
 
+A spec criterion may carry several test names, and they may not all land on the same slice. When that happens, **repeat the criterion line in each slice that carries one of its test names**, with only that slice's test names under it. The criterion is context for reading the test name; a test name with its criterion stripped off is unreadable, and splitting a criterion's text is not the same as splitting its test names. Only the test names are exclusive.
+
 Then three cases, all of which must be handled:
 
 | Case | Do |
 | --- | --- |
 | A slice carries at least one test name | It is buildable. Nothing extra to say. |
-| A slice carries none | Write one line in its body: *No test name in the spec covers this slice. Not buildable — the gap is in the spec, not in this ticket.* |
+| A slice carries none | Write the not-buildable statement in its body, in the exact words `references/ticket-template.md` gives. Do not paraphrase it from memory — the template holds the wording. |
 | A test name fits no slice | Report it in step 5 and do not drop it. Either the cut is wrong or the spec specifies something outside its own scope. Both are the user's call. |
 
 **Do not invent a test name to close any of these gaps**, and do not soften the not-buildable line. Whoever picks the ticket up needs to know the gap exists before they start.
@@ -134,14 +201,25 @@ The spec's **Combined Behavior** list stays on the parent. It is not allocated, 
 
 ### 5. Get the breakdown confirmed
 
-Present it as a numbered list in dependency order, blockers first. For each ticket:
+Read `references/ticket-template.md` now. Render every proposed issue completely
+**into a scratch file under `$TMPDIR`, one per ticket**, then present the publish
+preview from those files. Render once and read it back; do not compose the body
+in the preview and again at creation.
+
+Give each ticket a **distinct title**. Two slices of the same migrate batch will
+otherwise collide, and the preview, the scratch files and the read-back all lose
+the only handle a human has on which ticket is which.
+
+Present the preview as a numbered list in dependency order, blockers first. For
+each ticket, show:
 
 - **Title** — in the project's vocabulary.
 - **Blocked by** — the tickets that gate it, or "none".
-- **What it delivers** — the end-to-end behavior this ticket makes work.
-- **Test names it carries** — transcribed, or the not-buildable line.
+- **Exact issue body** — the complete Markdown that will be sent to GitHub,
+  following the template exactly. Put it in a fenced block so headings and
+  spacing are reviewable.
 
-Then state, separately: the total ticket count, and **every test name that fitted no slice**.
+Then state, separately: the total ticket count, **every test name that fitted no slice**, and **which Project the issues will be placed on** — by name, or "none, the parent is on no board", or "none, the token lacks the `project` scope".
 
 Ask the user:
 
@@ -149,25 +227,42 @@ Ask the user:
 - Is every blocking edge a real gate?
 - Should any tickets be merged or split further?
 
-Iterate until the user approves. **Publish nothing before that.** Relations are far more tedious to unpick than to get right once, and a wrong edge blocks work that could have started.
+Iterate until the user approves. After any merge, split, wording change, test
+allocation change, or edge change, render and show the affected preview again.
+The approved titles, bodies, and blocking edges are the publish plan.
+
+**Publish nothing before that.** Do not replace the full preview with a summary:
+the body the user approves must be the body GitHub receives. Relations are far
+more tedious to unpick than to get right once, and a wrong edge blocks work that
+could have started.
 
 ### 6. Publish, in dependency order
 
 Blockers first, so every edge can name an issue that already exists.
 
-Read `references/ticket-template.md` for the issue body, and follow it.
-
-Create each ticket and **capture its `id` as well as its `number`**:
+Create each ticket **from its scratch file**, never by retyping the body:
 
 ```
-gh api repos/<owner>/<repo>/issues \
-  -f title='<title>' \
-  -f body="$(cat <<'BODY'
-<the body from the template>
-BODY
-)" \
-  --jq '{number, id}'
+TITLE=$(cat <<'TITLE_EOF'
+<the approved title>
+TITLE_EOF
+)
+gh issue create --title "$TITLE" --body-file "$TMPDIR/to-tickets-<slug>.md"
 ```
+
+The title goes through a variable rather than inside quotes because an
+apostrophe in a title — common in English ticket titles — breaks `-f title='…'`
+and can truncate the title silently.
+
+`gh issue create` prints the new issue's URL; its last path segment is the
+`number`. **Capture the database `id` too**, because both relations need it:
+
+```
+gh api repos/<owner>/<repo>/issues/<number> --jq '.id'
+```
+
+Keep the `number` you captured here. It, not the title, is what step 7 uses to
+match a published issue to its plan entry.
 
 Then attach it to the parent, and add its blocking edges:
 
@@ -178,6 +273,34 @@ gh api -X POST repos/<owner>/<repo>/issues/<parent number>/sub_issues \
 gh api -X POST repos/<owner>/<repo>/issues/<child number>/dependencies/blocked_by \
   -F issue_id=<blocker id>
 ```
+
+Then, if step 1 found a Project, place the issue on it:
+
+```
+gh project item-add <project number> --owner <project owner login> --url <issue url>
+```
+
+**Placement is idempotent — re-running it is safe.** Adding an issue that is already on the board returns the item it already has and exits `0`, without creating a second card. So when placement is the only thing that failed, repairing it is simply running the same command again; there is nothing to check first and nothing to undo.
+
+**A failure here does not stop the publish and is never silent.** The issues and
+their relations are the deliverable; the board is a view of it. On failure,
+finish the remaining tickets and their edges, then report the placement as
+incomplete in step 7 and give the user the command to finish it by hand. Placing
+half a breakdown on a board and saying nothing is the one outcome to avoid — the
+board then looks like the whole breakdown.
+
+**Do not set any Project field, and do not apply any label.** No Status, no
+Priority, no Size. Readiness is already judged by whether a ticket carries test
+names, and the first pass over the board is the user's. A Project with GitHub's
+default *item added → Todo* workflow enabled will set Status by itself; that is
+the board's own rule acting, and it is not yours to pre-empt or to duplicate.
+
+**Back off rather than retry on `403` or `429`.** Publishing a breakdown is a
+burst of content-creating requests — a create, a sub-issue attach, one call per
+blocking edge and one per board placement, per ticket — which is the exact shape
+GitHub's secondary rate limits target. A retry loop here does not recover; it
+creates duplicate issues. Stop, report exactly how far publishing got, and let
+the user resume.
 
 **Both relations are written by issue `id` — the database id returned at creation — not by issue `number`.** The path segment is a number; the payload is an id. Getting this wrong fails in two different ways, and only one of them is loud:
 
@@ -194,35 +317,85 @@ If you no longer hold an `id`, read it back rather than guessing: `gh api repos/
 
 To undo an edge: `gh api -X DELETE repos/<owner>/<repo>/issues/<number>/dependencies/blocked_by/<blocker id>`.
 
-**Do not add the issues to a GitHub Project, do not set any Project field, and do not apply any label.** Nothing in this workflow reads them.
 
-### 7. Read the graph back, and compare it to what was approved
+### 7. Read the issues and graph back, and compare them to what was approved
 
 ```
 gh api graphql -f query='
 { repository(owner:"<owner>", name:"<repo>") {
     issue(number: <parent number>) {
-      subIssues(first: 50) { nodes { number title blockedBy(first: 20) { nodes { number title repository { nameWithOwner } } } } }
+      subIssues(first: 50) {
+        totalCount
+        pageInfo { hasNextPage }
+        nodes { number title body blockedBy(first: 20) {
+          totalCount pageInfo { hasNextPage }
+          nodes { number title repository { nameWithOwner } }
+        } }
+      }
     }
 } }' --jq '.data'
 ```
 
-Compare the **node lists**, name by name, against the breakdown the user approved:
+**Check `hasNextPage` on every connection before comparing anything.** Both
+`first:` values are caps, and past them the query returns a truncated list that
+looks complete. The strongest assertion below — that nothing *other* than the
+approved tickets is attached — silently becomes unprovable on a truncated list.
+If either `hasNextPage` is `true`, page through until it is `false` and compare
+the whole set; never compare a partial one.
+
+Compare the returned issues against the publish plan the user approved, **matching each returned issue to its plan entry by the `number` captured in step 6**, not by title:
 
 - Every approved ticket appears as a sub-issue of the parent, and nothing else does.
-- Every blocking edge appears, with no extras, and **every blocker is in this repository**. A blocker from another repository is the silent failure above; delete it and redo that edge.
+- Every title and body is identical to the approved preview. Compare the body
+  **mechanically against its scratch file**, not by reading it:
 
-Then report: each ticket by number and title, its blockers by number, and any edge you could not create. Report a partial publish as partial — a breakdown that is half-linked is worse than one that is not linked at all, because it looks finished.
+  ```
+  gh api repos/<owner>/<repo>/issues/<number> --jq -r '.body' \
+    | diff - "$TMPDIR/to-tickets-<slug>.md"
+  ```
+
+  A clean `diff` is the check. Checking that the headings are present is not —
+  that is what a body mangled by quoting still looks like.
+- Every criterion and test name still appears exactly as approved, and no test
+  name appears in more than one ticket.
+- Every blocking edge appears, with no extras, and **every blocker is in this repository**. A blocker from another repository is the silent failure above; delete it and redo that edge.
+- Every ticket is on the Project the parent is on, and on no other. Read it back
+  with the same `projectItems` query from step 1, against each child rather than
+  the parent. Do not trust `item-add`'s own output: it reports the item it
+  created, not the set of items on the board.
+
+If a created issue's title or body differs, update it from the scratch file
+(`gh issue edit <number> --body-file …`) and diff it again. If a relation differs, repair it and read the graph back
+again. Stop retrying after one repair attempt for the same mismatch; report the
+publish as partial and name the exact mismatch that remains.
+
+Then report: each ticket by number and title, its blockers by number, the board
+it was placed on, and any title, body, sub-issue relation, blocking edge, or
+board placement that could not be made to match.
+Report a partial publish as partial — a breakdown that is half-linked is worse
+than one that is not linked at all, because it looks finished.
+
+Delete the scratch files once the comparison is done. They are transport; leaving
+them behind creates the second record this skill exists to avoid.
 
 ### 8. Hand off
 
 Say plainly what comes next: run `dev` on a buildable ticket. A ticket marked not buildable needs `grill-me` and `to-spec` again before implementation; splitting did not settle its missing criteria.
+
+Then print one ready-to-paste line, with the numbers you just created filled in, for assigning the batch to a milestone:
+
+```
+gh issue edit <every created number> --milestone "<name>"
+```
+
+**Print it; do not run it and do not ask which milestone.** Which batch belongs to which milestone is a delivery decision, and it is the user's. This is a convenience at the moment the numbers are in front of them, not a step — leave it out only if the repository has no milestones at all.
 
 Do not invoke anything. Skills in this workflow are not chained inside one session; the user starts the next one.
 
 ## Verification
 
 - Exactly one spec issue was the input, and it was named at the start — not reconstructed at the end.
+- The parent was confirmed to have no sub-issues before any work was done.
 - Its comments were read, not only its body.
 - The tracker was confirmed writable before the work was done.
 - The seams were quoted from the spec. None were added, moved or re-chosen.
@@ -231,7 +404,16 @@ Do not invoke anything. Skills in this workflow are not chained inside one sessi
 - Every test name in the spec landed on exactly one ticket, as written. None were invented, none were silently dropped, and any that fitted no slice were reported.
 - Every ticket without a test name carries the not-buildable line.
 - The Combined Behavior list stayed on the parent.
+- The input was confirmed to be a `to-spec` spec — it carried a Seams section and an Acceptance Criteria section — before it was split.
+- Every ticket title is distinct.
 - The breakdown was approved by the user before anything was published.
+- The approved breakdown included each ticket's complete rendered body, every issue was created from that same scratch file rather than from a retyped body, and every published body was compared to its file with `diff`.
+- The read-back paged past `first:` wherever `hasNextPage` was true, and published issues were matched to plan entries by captured `number`, not by title.
+- The scratch files were deleted at the end, and nothing was written inside the repository.
 - Both relations were written by `id`. The graph was read back and compared node by node, and no blocker belongs to another repository.
-- The parent's body, title and state are unchanged. No label, no Project.
+- Every created title and complete body was read back and matched against the
+  approved preview; any repair was read back once more.
+- The destination Project was inherited from the parent, not chosen or asked for, and was named in the preview before approval.
+- Every ticket was read back as being on that Project and on no other; an unplaced ticket was reported, with the command to place it.
+- The parent's body, title and state are unchanged. No label and no Project field were set on any issue.
 - No file was written.

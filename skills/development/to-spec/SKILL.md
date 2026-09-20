@@ -119,7 +119,7 @@ In the last two cases, **do not fall back to writing the spec to a file.** A spe
 
 But do not throw the work away either: **print the finished spec body in this conversation** so the user can place it themselves, and say plainly that it was not published. The conversation is not a second record — it dies with the session, which is exactly why the spec must still reach an issue.
 
-**Do not add the issue to a GitHub Project and do not set any Project field.** Nothing in this workflow reads them.
+**Do not add the issue to a GitHub Project and do not set any Project field.** Placing the spec issue is the user's decision, and it is the one place they can make it: `to-tickets` puts every sub-issue on whatever board this issue is already on, so this issue's placement is the switch that controls the whole breakdown's. Making that choice for them here would take the switch away.
 
 **New spec → create one issue.** Do not decide whether it is a "parent". It becomes a parent if and when `to-tickets` attaches sub-issues to it; if the work turns out to be a single ticket, it has no children and never was one. That count is only knowable at splitting time, so it is not a judgment you make here.
 
@@ -130,6 +130,8 @@ But do not throw the work away either: **print the finished spec body in this co
 ### 5. Hand off
 
 Say plainly what comes next: run `to-tickets` on this issue.
+
+If the user keeps issues on a GitHub Project, add one line: **put this issue on the board before running `to-tickets`, or its sub-issues will not be placed.** `to-tickets` inherits the board from this issue and does not ask, so doing it afterwards places the spec and leaves every ticket off. Say it as a reminder, not a question — and do not place the issue yourself.
 
 Do not invoke it. Skills in this workflow are not chained inside one session; the user starts the next one.
 

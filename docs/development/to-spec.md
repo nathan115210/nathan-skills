@@ -94,7 +94,15 @@ the drifting second record this workflow exists to avoid — but it will not thr
 the work away either. Copy it out, or fix the access and re-run.
 
 **Does it add the issue to a GitHub Project?**
-No, and it sets no Project fields. Nothing in this workflow reads them.
+No, and it sets no Project fields — but **you should**, before running
+[to-tickets](./to-tickets.md). That skill places every sub-issue on whatever
+board this spec issue is already on, and it inherits rather than asks. Place the
+spec afterwards and you get the spec on the board and none of its tickets.
+
+This is deliberate rather than an oversight: the spec issue's placement is the
+single switch controlling the whole breakdown's. Leave the spec off a board and
+nothing from it reaches one. `to-spec` does not flip that switch for you, and it
+reminds you at handoff.
 
 **It told me to run `to-tickets`. What does that do?**
 It splits this issue into sub-issues with native blocking relations, and marks
