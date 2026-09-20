@@ -13,6 +13,7 @@ current implementation status.
 | Skill | One reusable set of agent instructions, rooted at a `SKILL.md`. A skill is not the whole workflow. |
 | Category | A source-tree grouping such as `development`. Installed skill names remain flat across tools. |
 | Source repository | This repository, which maintains skills, shared helpers and their human-facing documentation. |
+| Global communication preferences | Always-on response-style instructions shared across tools, independent of skill invocation and project workflow. |
 | Target project | The project a skill is planning, setting up or developing. Its files and rules are separate from this repository's maintenance files and rules. |
 | Topic PRD | The planning document produced by `grill-me` in the user's Downloads folder, under a confirmed filename and with a project identity header. |
 | Spec | Settled requirements and decisions recorded in one GitHub issue by `to-spec`. It is content in an issue, not a second local specification file. |
@@ -32,6 +33,8 @@ current implementation status.
 | [AGENTS.md](./AGENTS.md) | Rules for working in this source repository. `CLAUDE.md` and `GEMINI.md` link to this same file. |
 | [README.md](./README.md) | Human entry point: what this repository is, installation, uninstall and navigation. |
 | `CONTEXT.md` | Shared vocabulary and the responsibilities of these documents. Update when their meaning changes. |
+| `instructions/communication.md` | Single maintained source of global communication preferences; do not copy its rules into individual skills. |
+| `docs/communication.md` / `scripts/instructions.py` | Human setup guide and installer/remover for global instruction links, separate from skill links. |
 | `skills/<category>/<name>/SKILL.md` | Instructions for executing that skill, including its inputs, boundaries and completion conditions. |
 | `docs/<category>/README.md` | The workflow map, entry choices and which stages are implemented. |
 | `docs/<category>/<name>.md` | How a person uses one skill, recognizes a good run, and handles known limitations. |

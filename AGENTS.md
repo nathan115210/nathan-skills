@@ -38,6 +38,11 @@ Gemini CLI and Copilot CLI are no longer managed.
 
 ## Context and documentation
 
+Global response style lives only in `instructions/communication.md`, installed
+with `python3 scripts/instructions.py install`. Do not duplicate these rules in
+individual skills. Keep skill-specific questioning and artifact requirements in
+their skills. See `docs/communication.md` for loading and verification limits.
+
 Read [CONTEXT.md](./CONTEXT.md) when changing workflow terminology, skill
 boundaries, or documentation. It defines shared terms and points to the relevant
 sources; it does not duplicate the workflow or its current implementation status.
@@ -83,7 +88,8 @@ details or personal history from the local decision record.
   is not runtime verification. An environment or usage-limit failure does not
   prove a skill failed or passed.
 - **Every change a tool runs needs a changeset.** Run `npm run changeset` in the
-  same change that adds, renames, or alters a skill or a global script. No
+  same change that adds, renames, or alters a skill, global script, or file in
+  `instructions/`. No
   changeset means the change ships unversioned and unmentioned in the changelog.
   Docs-only edits that change nothing a tool runs need none.
 - **Before 1.0, never pick `major`.** Changesets does not soften a major bump on

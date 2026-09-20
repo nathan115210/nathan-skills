@@ -17,6 +17,7 @@ From the repository root:
 ```bash
 cd ~/dev/nathan-skills   # wherever the clone lives
 ./scripts/relink.sh
+python3 scripts/instructions.py install
 ```
 
 `./` means "the file at this path", not a command on your `PATH` — the leading
@@ -118,6 +119,10 @@ The last check is the tool itself: type `/grill-me` and see whether it offers
 the skill. A link can be perfect while the frontmatter keeps the tool from
 loading it — a skill's `name:` must equal its folder name.
 
+Global response style is installed separately through the
+[communication preferences](../communication.md). It applies without invoking
+any skill; skill discovery alone does not install it.
+
 ## Uninstall
 
 Run from the clone you want to disconnect:
@@ -125,6 +130,8 @@ Run from the clone you want to disconnect:
 ```bash
 ./scripts/unlink.sh --dry-run
 ./scripts/unlink.sh
+python3 scripts/instructions.py remove --dry-run
+python3 scripts/instructions.py remove
 ```
 
 Both commands inspect direct symlinks in `~/.claude/skills`, `~/.codex/skills`

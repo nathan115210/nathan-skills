@@ -11,6 +11,10 @@ It asks one decision question at a time, with a recommendation and the trade-off
 behind it. It will not invent agreement: what you decided, what it merely
 proposed, and what is still open stay visibly separate in the file.
 
+Response style comes from the [global communication preferences](../communication.md),
+installed independently of skills. This skill retains the interview decisions
+and PRD requirements; it does not duplicate the global formatting rules.
+
 The interview ends when every acceptance criterion can produce a concrete test
 name. That is the exit condition, not "we have talked enough".
 

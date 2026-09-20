@@ -181,29 +181,35 @@ class SetupTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             helper.write_block(self.root, 'AGENTS.md', helper.file_info(path)['sha256'], '', remove=True)
 
-    def test_report_append_preserves_all_history_and_checks_hash(self):
-        path = self.root / helper.REPORT
-        path.write_bytes(b'Human history\r\n')
-        previous = path.read_bytes()
-        expected = helper.file_info(path)['sha256']
-        helper.append_report(self.root, expected, 'First result')
-        self.assertTrue(path.read_bytes().startswith(previous))
-        with self.assertRaises(ValueError):
-            helper.append_report(self.root, expected, 'Stale result')
-        helper.append_report(self.root, helper.file_info(path)['sha256'], 'Second result')
-        self.assertIn('First result', path.read_text())
-        self.assertIn('Second result', path.read_text())
+    def test_setup_refresh_never_creates_or_changes_legacy_report(self):
+        report = self.root / 'nathan-setup-report.md'
+        for existing in (False, True):
+            with self.subTest(existing=existing):
+                if existing:
+                    report.write_bytes(b'Historical report\r\n')
+                with patch.object(helper, 'discover', return_value={
+                        n: {'executable': None, 'status': 'not_detected'} for n in helper.TOOLS}):
+                    inventory = helper.inspect(self.root)
+                    self.assertNotIn(report.name, inventory['instructions'])
+                    self.write('Project commands')
+                    helper.connect(self.root, confirmed=['claude'])
+                    self.write('Refreshed commands')
+                    helper.status(self.root)
+                self.assertTrue(helper.state_path(self.root).is_file())
+                if existing:
+                    self.assertEqual(report.read_bytes(), b'Historical report\r\n')
+                else:
+                    self.assertFalse(report.exists())
 
-    def test_report_symlink_and_preview(self):
-        result = helper.append_report(self.root, 'missing', 'Result', dry_run=True)
-        self.assertEqual(result['status'], 'preview')
-        self.assertFalse((self.root / '.nathan-setup').exists())
-        target = self.root / 'original'
-        target.write_text('Preserve')
-        (self.root / helper.REPORT).symlink_to(target)
-        with self.assertRaises(ValueError):
-            helper.append_report(self.root, 'missing', 'Overwrite')
-        self.assertEqual(target.read_text(), 'Preserve')
+    def test_removed_report_command_fails_without_writing(self):
+        import subprocess
+        import sys
+        result = subprocess.run(
+            [sys.executable, helper.__file__, 'report', '--project', str(self.root)],
+            capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn('invalid choice', result.stderr)
+        self.assertEqual(list(self.root.iterdir()), [])
 
     def test_permissions_and_concurrent_editor_preserved(self):
         path = self.root / 'CLAUDE.md'
