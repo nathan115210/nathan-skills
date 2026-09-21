@@ -265,8 +265,11 @@ folder git ignores, so nothing collides with another project's files:
   compliant; the ticket's criterion was worded at the wrong level. After `to-spec`
   and `to-tickets` began carrying the observable with each test name, `dev` on the
   regenerated ticket changed only the function. `code-review` was not re-run on
-  that. `accessibility-review` is unverified. See
-  each skill's page.
+  that. `accessibility-review` is unverified. The `nathan-grill-me` and
+  `codebase-scan` saves were run before the shared save-folder protocol; after
+  that change only the skill text is checked (`scripts/test_save_protocol.py`).
+  Saving through the shared protocol is untested at runtime on agy, Claude Code
+  and Codex. See each skill's page.
 
 ## Where to start
 

@@ -12,6 +12,24 @@ CODEBASE_SCAN = SKILLS / "codebase-scan"
 ACCESSIBILITY_REVIEW = SKILLS / "accessibility-review"
 SHARED = GRILL_ME / "references" / "save-folder-protocol.md"
 
+# Each saving skill's own rules: skill folder, subfolder, filename key and the
+# pattern for its replace-or-resume rule.
+SAVING_SKILLS = [
+    (GRILL_ME, "prd", "topic", r"resume by topic"),
+    (
+        CODEBASE_SCAN,
+        "code-scan",
+        "scope",
+        r"rescan on the same day with the same scope replaces that day's file",
+    ),
+    (
+        ACCESSIBILITY_REVIEW,
+        "accessibility-audit",
+        "topic",
+        r"re-review on the same day of the same topic replaces that day's file",
+    ),
+]
+
 # One pattern per shared item in the protocol. A file states the protocol only
 # when it matches every one.
 SHARED_ITEMS = {
@@ -124,9 +142,25 @@ class SaveProtocolTest(unittest.TestCase):
         self.assertIn("the scope line", text)
         self.assertIn("read the save-folder protocol", text)
 
-    def test_accessibility_review_reference_uses_no_cross_skill_relative_path(self):
-        text = read(ACCESSIBILITY_REVIEW / "SKILL.md")
-        self.assertNotRegex(text, r"\.\./[\w-]+/references")
+    def test_each_saving_skill_names_its_subfolder_filename_key_and_replace_or_resume_rule(self):
+        for skill, subfolder, key, rule in SAVING_SKILLS:
+            with self.subTest(skill=skill.name):
+                text = normalise(read(skill / "SKILL.md"))
+                self.assertIn(f"subfolder is `{subfolder}`", text)
+                self.assertIn(f"`<key>` is `<{key}>`", text)
+                self.assertRegex(text, rule)
+
+    def test_saving_skills_reference_the_protocol_without_a_cross_skill_relative_path(self):
+        for skill, _subfolder, _key, _rule in SAVING_SKILLS:
+            with self.subTest(skill=skill.name):
+                text = read(skill / "SKILL.md")
+                self.assertIn("save-folder-protocol.md", text)
+                self.assertIn("skill catalogue", normalise(text))
+                # Other cross-skill links (codebase-scan's reviewer discipline)
+                # are outside the protocol; only paths reaching it are barred.
+                self.assertNotRegex(
+                    text, r"\.\.?/[^\s)`]*(nathan-grill-me|save-folder-protocol)"
+                )
 
 
 if __name__ == "__main__":
