@@ -26,11 +26,9 @@ When an answer contradicts an earlier decision, expose the conflict and revisit 
 
 ## Persistent PRD
 
-- Write to `<project root>/.nathan-skills/prd/<topic>-<YYYY-MM-DD>.md`. The project root is the git top-level of the working directory, or the working directory itself outside a repository. `<topic>` is a short lowercase hyphenated name from what the user called the work, such as `order-refunds`; the date is the creation date in local time and never changes afterwards.
-- On the first write, create `.nathan-skills/prd/` and, if `.nathan-skills/.gitignore` does not exist, create it containing `*`. The folder then ignores itself and no tracked file changes. Never overwrite an existing `.gitignore`, and stop if `.nathan-skills` is a symlink.
-- Do not ask for the filename. Say the full path once, when you first write it. Different projects have different folders, so there is nothing to collide with.
+- Read the save-folder protocol (`save-folder-protocol.md`, in this skill's references folder) before the first write; locate it through the runtime's skill catalogue, this skill's own directory, or the project's configured skill locations. It covers the project root, the filename shape, the self-ignoring `.gitignore`, symlink refusal, the path announcement, write failures and the working-document disclaimer, and is not repeated in this skill.
+- This skill's own rules: the subfolder is `prd`, and `<key>` is `<topic>`, a short lowercase hyphenated name from what the user called the work, such as `order-refunds`. The date is the creation date and never changes afterwards.
 - Resume by topic. Before creating a file, look for `.nathan-skills/prd/<topic>-*.md` and reuse the match whatever its date: read it before editing, keep its name, and preserve unrelated content. Ask only if several topics could be the intended record. Never overwrite a different topic.
-- The file is a working document: it is git-ignored, it belongs to this checkout only (another worktree or a fresh clone does not have it), it is not backed up, and it does not travel to another machine. Say so when handing it over.
 - Save confirmed decisions as the conversation progresses, not only at the end. Use absolute dates. Keep proposals and unresolved questions visibly separate from confirmed decisions.
 - Preserve superseded decisions in a history section with the reason they changed. Close settled questions in the open-items list in the same update, referencing the deciding item rather than deleting their history.
 
