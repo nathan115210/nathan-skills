@@ -244,6 +244,10 @@ folder git ignores, so nothing collides with another project's files:
 - **Self-ignoring.** The first write creates the folder and a `.gitignore`
   containing `*`, so no tracked file changes. An existing `.gitignore` is never
   overwritten, and a symlinked `.nathan-skills` is refused.
+- **Shared steps.** The steps above are written once, in `nathan-grill-me`'s
+  `save-folder-protocol.md`. `nathan-grill-me` and `codebase-scan` point to it; each
+  states only its own subfolder, filename key and replace-or-resume rule.
+  `accessibility-review` still carries its own copy.
 - **Name.** The topic comes first, then the creation date in local time. A later
   run on the same topic reuses the existing file whatever its date; `to-spec` takes
   the latest date when one topic has several files.

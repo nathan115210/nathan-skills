@@ -159,18 +159,20 @@ to look thorough.
 
 ## Save it, and hand off
 
-Present the report in full in the conversation, then save it unabridged to
-`<project root>/.nathan-skills/code-scan/<scope>-<YYYY-MM-DD>.md` and give the user the
-absolute path. The project root is the git top-level of the scanned repository;
-`<scope>` is a short lowercase hyphenated name for what was scanned (`full` for the whole
-repository); the date is today in local time. On the first write, create the folder and,
-if `.nathan-skills/.gitignore` does not exist, create it containing `*`, so the folder
-ignores itself and no tracked file changes. Never overwrite an existing `.gitignore`;
-stop if `.nathan-skills` is a symlink. A rescan on the same day with the same scope
-replaces that day's file. Skip the file only if the user does not want one, or the active
-tool mode and permissions prevent writing it — and then say so plainly rather than
-claiming it was saved. Say what the file is: a working document, git-ignored, belonging
-to this checkout only, not backed up, and not travelling to another machine.
+Present the report in full in the conversation, then save it unabridged and give the
+user the absolute path.
+
+- Read the save-folder protocol (`save-folder-protocol.md`, in the `nathan-grill-me`
+  skill's references folder) before the first write; locate it through the runtime's
+  skill catalogue, the sibling skill in this source tree, or the project's configured
+  skill locations. It covers the project root, the filename shape, first-write setup,
+  the path announcement, write failures and the working-document disclaimer, and is not
+  repeated in this skill.
+- This skill's own rules: the subfolder is `code-scan`, and `<key>` is `<scope>`, a short
+  lowercase hyphenated name for what was scanned (`full` for the whole repository). A
+  rescan on the same day with the same scope replaces that day's file.
+- The user may decline the file. Skip it only if they do not want one, or the protocol's
+  write-failure rule applies, and say so plainly.
 
 **Findings are not decisions.** This report says what is wrong; it does not say
 what gets fixed, in what order, or what "fixed" means. Those are the user's
@@ -208,7 +210,7 @@ candidate list because the user said "yes" to something else, do not start
 - The candidate list is ordered by severity and every entry carries a suspected
   issue number or "no matching issue".
 - No file was written inside the target repository except the report under
-  `.nathan-skills/code-scan/` and, on first use, `.nathan-skills/.gitignore`.
+  `.nathan-skills/code-scan/` and whatever the shared protocol creates on first use.
 - No tracker write during the scan itself, and no git write, build, install or
   test run at any point.
 - No other workflow skill was invoked during the scan. If `to-tickets` ran, it

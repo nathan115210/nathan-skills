@@ -8,6 +8,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / "skills" / "development"
 GRILL_ME = SKILLS / "nathan-grill-me"
+CODEBASE_SCAN = SKILLS / "codebase-scan"
 SHARED = GRILL_ME / "references" / "save-folder-protocol.md"
 
 # One pattern per shared item in the protocol. A file states the protocol only
@@ -80,6 +81,25 @@ class SaveProtocolTest(unittest.TestCase):
         self.assertIn("resume by topic", text)
         self.assertRegex(text, r"creation date and never changes")
         self.assertIn("subfolder is `prd`", text)
+
+    def test_codebase_scan_does_not_restate_the_gitignore_and_symlink_steps(self):
+        text = read(CODEBASE_SCAN / "SKILL.md")
+        for step in RESTATED_STEPS:
+            hits = [
+                line
+                for line in text.splitlines()
+                if re.search(step, line, re.IGNORECASE)
+            ]
+            self.assertEqual([], hits, f"restates {step}")
+
+    def test_codebase_scan_replaces_a_same_day_file_for_the_same_scope(self):
+        text = normalise(read(CODEBASE_SCAN / "SKILL.md"))
+        self.assertIn("subfolder is `code-scan`", text)
+        self.assertIn("`<key>` is `<scope>`", text)
+        self.assertRegex(
+            text, r"rescan on the same day with the same scope replaces that day's file"
+        )
+        self.assertRegex(text, r"the user may decline the file")
 
 
 if __name__ == "__main__":
