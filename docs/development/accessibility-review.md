@@ -13,7 +13,9 @@ For a combined review it presents design and code reports, then reconciles their
 agreement, differences and coverage gaps. It changes nothing in the project and
 publishes nothing. The single file it writes is its own report, saved to the
 git-ignored `.nathan-skills/accessibility-audit/<topic>-<YYYY-MM-DD>.md` so the
-findings survive the session that produced them. See
+findings survive the session that produced them. The shared save steps live in
+`nathan-grill-me`'s save-folder protocol, so `nathan-grill-me` must be installed
+(`relink.sh` links every skill). See
 [Where documents are saved](./README.md#where-documents-are-saved).
 
 ## When to reach for it
