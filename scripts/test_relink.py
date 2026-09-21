@@ -16,9 +16,16 @@ class RelinkTests(unittest.TestCase):
         self.base = Path(self.tmp.name).resolve()
         self.repo = self.base / 'repository with spaces'
         self.home = self.base / 'home'
-        (self.repo / 'scripts').mkdir(parents=True)
+        (self.repo / 'scripts/lib').mkdir(parents=True)
         shutil.copy2(Path(__file__).with_name('relink.sh'), self.repo / 'scripts/relink.sh')
+        shutil.copy2(Path(__file__).parent / 'lib/links.sh', self.repo / 'scripts/lib/links.sh')
         self.skill = self.add_skill('development/example')
+
+    def test_missing_lib_fails_with_error(self):
+        (self.repo / 'scripts/lib/links.sh').unlink()
+        result = self.run_relink()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('scripts/lib/links.sh', result.stderr)
 
     def add_skill(self, relative):
         path = self.repo / 'skills' / relative
@@ -154,8 +161,9 @@ class WorktreeGuardTests(unittest.TestCase):
         skill = self.main / 'skills/development/example'
         skill.mkdir(parents=True)
         (skill / 'SKILL.md').write_text('---\nname: example\n---\n')
-        (self.main / 'scripts').mkdir()
+        (self.main / 'scripts/lib').mkdir(parents=True)
         shutil.copy2(Path(__file__).with_name('relink.sh'), self.main / 'scripts/relink.sh')
+        shutil.copy2(Path(__file__).parent / 'lib/links.sh', self.main / 'scripts/lib/links.sh')
         self.git('init', '-b', 'main')
         self.git('add', '-A')
         self.git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-m', 'init')
