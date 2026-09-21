@@ -124,6 +124,8 @@ its absolute path.
   skill locations. It covers the project root, the filename shape, first-write setup,
   the path announcement, write failures and the working-document disclaimer, and is not
   repeated in this skill.
+  If the protocol cannot be found, say so and present the report without saving it; do
+  not save from memory.
 - This skill's own rules: the subfolder is `accessibility-audit`, and `<key>` is
   `<topic>`, a short lowercase hyphenated name for the reviewed scope. A re-review on the
   same day of the same topic replaces that day's file.

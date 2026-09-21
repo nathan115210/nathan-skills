@@ -10,6 +10,9 @@ saving from memory.
 
 - Write to `<project root>/.nathan-skills/<subfolder>/<key>-<YYYY-MM-DD>.md`. The
   calling skill supplies `<subfolder>` and `<key>`; the date is in local time.
+- `<key>` uses only lowercase letters, digits and hyphens, and does not start with a
+  hyphen. If the name the skill would use contains anything else (a slash, `..`, a
+  space), normalise it to that form before writing.
 - The project root is the git top-level of the working directory. Outside a git
   repository it is the working directory itself.
 
