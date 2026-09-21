@@ -245,7 +245,11 @@ folder git ignores, so nothing collides with another project's files:
   symlink refusal, write failures and the disclaimer are written once, in
   `nathan-grill-me`'s `save-folder-protocol.md`. `nathan-grill-me`,
   `codebase-scan` and `accessibility-review` point to it; each states only its own
-  subfolder, filename key and replace-or-resume rule.
+  subfolder, filename key and replace-or-resume rule. The same file has a
+  reader-side section — where the folder is, how a file is named, git-ignored,
+  one checkout — for a skill opening a file it did not write. `to-spec` points at
+  that section instead of restating it, and reads it only on the branch where it
+  has to locate the PRD itself.
 - **Name.** The key comes first, then the date in local time. `nathan-grill-me`
   reuses the existing file for a topic whatever its date, and `to-spec` takes the
   latest date when one topic has several files. `codebase-scan` and

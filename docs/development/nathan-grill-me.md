@@ -62,6 +62,13 @@ them to save. The skill's own file keeps only the `prd` subfolder, the topic
 key, resume-by-topic and a creation date that never changes.
 `scripts/test_save_protocol.py` checks that text, not runtime behaviour.
 
+The same reference also has a section for the other side — a skill opening a
+file it did not write. It states where the folder is, the `<key>-<YYYY-MM-DD>.md`
+shape, that the files are git-ignored and that they belong to one checkout.
+`to-spec` reads it when it has to find the PRD itself, so the shape is stated in
+one place for writer and reader alike. Unlike a saving skill, a reader that
+cannot find the reference does not stop.
+
 ## Why the file has to stand alone
 
 The next step runs in a **new session**, and by the end of a real interview this
