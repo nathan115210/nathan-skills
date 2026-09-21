@@ -478,6 +478,10 @@ The rest of this section is design, not evidence.
   on no board cannot be positioned; the skill names those issues rather than
   ordering them, and putting them on the board is your call.
 - The handoff to `dev` has not been runtime-verified end to end.
+- **The command detail moved out of `SKILL.md`.** The exact `gh` queries and their
+  failure modes now live in `references/github-procedures.md`, and `SKILL.md` keeps
+  the decisions and approvals (about 27% fewer words, 7,008 to 5,098). The runs described on this page
+  used the earlier, longer text; the trimmed skill has not been run in any tool.
 - The template has **no canonical wording for a ticket that records an open
   question** — one that is neither a spec gap nor a scan finding. Issues #35-#38
   in this repository were published with an invented third sentence, which is

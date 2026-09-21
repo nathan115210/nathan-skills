@@ -43,6 +43,13 @@ SHARED_ITEMS = {
     "write failure said plainly": r"say so plainly",
     "working-document disclaimer": r"not backed up",
 }
+# Items only the protocol should word this way; used to catch restatement elsewhere.
+DISTINCTIVE_ITEMS = [
+    "no filename question",
+    "path said once",
+    "working-document disclaimer",
+    "symlink stop",
+]
 # Steps a skill must not restate once the protocol lives in the shared file.
 RESTATED_STEPS = [r"\.gitignore", r"symlink"]
 
@@ -63,11 +70,31 @@ def states_protocol(path):
 class SaveProtocolTest(unittest.TestCase):
     def test_working_document_protocol_is_stated_in_exactly_one_file(self):
         stating = sorted(
-            path.relative_to(GRILL_ME).as_posix()
-            for path in GRILL_ME.rglob("*.md")
+            path.relative_to(SKILLS).as_posix()
+            for path in SKILLS.rglob("*.md")
             if states_protocol(path)
         )
-        self.assertEqual(["references/save-folder-protocol.md"], stating)
+        self.assertEqual(["nathan-grill-me/references/save-folder-protocol.md"], stating)
+
+    def test_no_other_skill_file_restates_a_distinctive_protocol_step(self):
+        for path in SKILLS.rglob("*.md"):
+            if path == SHARED:
+                continue
+            text = normalise(read(path))
+            for name in DISTINCTIVE_ITEMS:
+                with self.subTest(file=path.relative_to(SKILLS).as_posix(), item=name):
+                    self.assertNotRegex(text, SHARED_ITEMS[name].lower())
+
+    def test_shared_protocol_constrains_the_filename_key(self):
+        text = normalise(read(SHARED))
+        self.assertRegex(text, r"lowercase letters, digits and hyphens")
+
+    def test_dependent_skills_say_what_to_do_when_the_protocol_is_missing(self):
+        for skill, _subfolder, _key, _rule in SAVING_SKILLS:
+            with self.subTest(skill=skill.name):
+                text = normalise(read(skill / "SKILL.md"))
+                self.assertRegex(text, r"cannot be found, say so and present")
+                self.assertIn("do not save from memory", text)
 
     def test_shared_protocol_covers_every_shared_item(self):
         text = normalise(read(SHARED))

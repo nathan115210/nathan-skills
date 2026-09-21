@@ -241,16 +241,15 @@ folder git ignores, so nothing collides with another project's files:
   accessibility-audit/           accessibility-review  <topic>-<YYYY-MM-DD>.md
 ```
 
-- **Self-ignoring.** The first write creates the folder and a `.gitignore`
-  containing `*`, so no tracked file changes. An existing `.gitignore` is never
-  overwritten, and a symlinked `.nathan-skills` is refused.
-- **Shared steps.** The steps above are written once, in `nathan-grill-me`'s
-  `save-folder-protocol.md`. `nathan-grill-me`, `codebase-scan` and
-  `accessibility-review` point to it; each states only its own subfolder, filename
-  key and replace-or-resume rule.
-- **Name.** The topic comes first, then the creation date in local time. A later
-  run on the same topic reuses the existing file whatever its date; `to-spec` takes
-  the latest date when one topic has several files.
+- **Shared steps.** Project root, filename shape, the self-ignoring `.gitignore`,
+  symlink refusal, write failures and the disclaimer are written once, in
+  `nathan-grill-me`'s `save-folder-protocol.md`. `nathan-grill-me`,
+  `codebase-scan` and `accessibility-review` point to it; each states only its own
+  subfolder, filename key and replace-or-resume rule.
+- **Name.** The key comes first, then the date in local time. `nathan-grill-me`
+  reuses the existing file for a topic whatever its date, and `to-spec` takes the
+  latest date when one topic has several files. `codebase-scan` and
+  `accessibility-review` write a dated snapshot: a same-day rerun replaces it.
 - **One checkout only.** Another worktree or a fresh clone does not have these
   files, and they are not backed up with the project. Copy one across by hand if
   you plan in one checkout and specify in another.

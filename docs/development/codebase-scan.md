@@ -55,9 +55,9 @@ Not into anything git tracks. The only file it writes is its own report, in the
 git-ignored `.nathan-skills/code-scan/` folder (see
 [Where documents are saved](./README.md#where-documents-are-saved)). The shared
 save steps live in `nathan-grill-me`'s save-folder protocol, so `nathan-grill-me`
-must be installed (`relink.sh` links every skill). The report keeps its identity header — project and
-revision — because `to-tickets` reads it and it still says what was scanned once
-the file is copied out.
+must be installed (`relink.sh` links every skill). The report keeps its identity
+header — project and revision — because `to-tickets` reads it and it still says
+what was scanned once the file is copied out.
 
 **Does it create issues?**
 Not while scanning, and it sets no field on the board. It reads the open issues
