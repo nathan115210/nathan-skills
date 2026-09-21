@@ -20,11 +20,11 @@ jobs:
           # The guard diffs against the base branch, so it needs the history.
           fetch-depth: 0
 
-      - name: Test the guard
-        run: python3 -m unittest discover -s scripts -p 'test_check_changeset.py'
+      - name: Test scripts
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
 
-      - name: Test the save-folder protocol text
-        run: python3 -m unittest scripts/test_save_protocol.py
+      - name: Test skills
+        run: python3 -m unittest discover -s skills/development/nathan-setup/scripts -p 'test_*.py'
 
       - name: Check changesets
         env:
