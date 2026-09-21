@@ -54,6 +54,14 @@ What is specific to this skill: it does not ask you to confirm a filename — th
 folder is per project, so it states the full path once, when it first writes — and
 a later session on the same topic reuses the existing file, keeping its name.
 
+The steps every saving skill shares (project root, filename shape, `.gitignore`,
+symlink refusal, path announcement, write failures, disclaimer) are written once
+in this skill's `references/save-folder-protocol.md`. `codebase-scan` and
+`accessibility-review` read it from here, so this skill must be installed for
+them to save. The skill's own file keeps only the `prd` subfolder, the topic
+key, resume-by-topic and a creation date that never changes.
+`scripts/test_save_protocol.py` checks that text, not runtime behaviour.
+
 ## Why the file has to stand alone
 
 The next step runs in a **new session**, and by the end of a real interview this
@@ -144,6 +152,10 @@ will not quietly switch modes. Copy the draft out yourself.
   containing `*`; `git status` showed only the ignored folder. Its closing message
   gave the absolute path, the readiness status, the unresolved decisions and the
   next step (`to-spec` in a new session), as the skill requires.
+- **The shared save-folder protocol is untested at runtime.** The agy run above
+  predates moving the save steps into `references/save-folder-protocol.md`. Only
+  the skill text is checked; a save through the shared file has not been run in
+  agy, Claude Code or Codex.
 - Not tested: a full interview, resume-by-topic on a later date, a refusal to
   overwrite an existing `.gitignore`, `to-spec` reading the folder, and any run in
   Claude Code or Codex.

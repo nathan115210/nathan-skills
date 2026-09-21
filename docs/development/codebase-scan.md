@@ -179,7 +179,9 @@ folder. The report carried the identity header, the scope line, a severity-order
 candidate list of 13 findings (each marked "no matching issue"), all three axes and
 a not-covered declaration per axis. It found the planted accessibility barriers.
 Not tested: a repository with authentication and a real dependency tree, a rescan
-on the same day, and any run in Claude Code or Codex.
+on the same day, and any run in Claude Code or Codex. This run predates moving the
+save steps into `nathan-grill-me`'s shared save-folder protocol; a save through the
+shared file has not been run in any tool.
 
 This is not QA, not a penetration test, not an accessibility certification, and
 not sign-off on anything.
