@@ -40,10 +40,17 @@ that; the conversation does not.
   (`viewerPermission`), because read access alone makes a repository look usable
   right up to the moment it isn't.
 - Settled decisions, in a document or in this conversation.
-- The PRD is in `.nathan-skills/prd/` under the project root, git-ignored. The
-  skill lists that folder and reads the match; it asks only if several topics
-  could be meant. The folder belongs to one checkout, so from a different
-  worktree or a fresh clone expect to be asked for the file's path.
+- The PRD is in `.nathan-skills/prd/`. The skill lists that folder and reads the
+  match; it asks only if several topics could be meant, and takes the latest
+  trailing date when one topic has several files. The folder belongs to one
+  checkout, so from a different worktree or a fresh clone expect to be asked for
+  the file's path.
+- Where that folder is and how its files are named is stated once, in
+  `nathan-grill-me`'s save-folder protocol, on the reader side. `to-spec` reads
+  that reference only when it has to find the PRD itself — not when you hand it a
+  path, not for a conversation input. `nathan-grill-me` is not a hard
+  prerequisite: if the reference is missing, `to-spec` lists the folder anyway,
+  says the reference was unavailable and names the file it took.
 
 ## Seams, before any prose is written
 
@@ -137,6 +144,14 @@ PRD is expected to go stale.
 
 ## Known limitations
 
+- **The conditional protocol read is unverified at runtime (2026-09-21).** That
+  `to-spec` reads the save-folder protocol only on the branch where it locates
+  the PRD itself, and that it proceeds rather than stopping when the protocol is
+  missing, are checked only as skill text
+  (`python3 -m unittest scripts/test_save_protocol.py`). Whether a model obeys
+  either rule has not been run on agy, Claude Code or Codex. The accepted risk:
+  a conditional read is a rule a model can skip, and skipping it fails quietly
+  by guessing the filename shape.
 - **Codex has partial runtime coverage (2026-09-14, CLI 0.154.0-alpha.6.2).**
   Discovery, one implicit-invocation scenario and full template reading were
   checked. Normal explicit runs checked the PRD identity line (a check the skill

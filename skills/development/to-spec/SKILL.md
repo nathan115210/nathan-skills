@@ -29,7 +29,9 @@ If neither is present, stop and say so. Do not run an interview to manufacture o
 
 The second mode is for a short discussion held right here that never produced a document. If a document exists, read it rather than the conversation, even when you were present for the conversation — the file is what the next reader will have.
 
-**Find the PRD in `.nathan-skills/prd/`.** Planning PRDs are git-ignored files named `<topic>-<YYYY-MM-DD>.md` under the project root (the git top-level of the working directory). List that folder. If one topic matches, read it and say which file you took; if several topics could be meant, ask which; if one topic has several dates, take the file with the latest trailing date. The folder belongs to one checkout, so a different worktree or a fresh clone will not have it — if the folder is missing or empty, ask for the file's path rather than searching elsewhere.
+**Find the PRD in `.nathan-skills/prd/`.** Only when no path was handed over and you have to locate the PRD yourself, read the save-folder protocol first (`save-folder-protocol.md`, in the `nathan-grill-me` skill's references folder); locate it through the runtime's skill catalogue, the sibling skill in this source tree, or the project's configured skill locations. Its reader section covers where the folder is, how a saved file is named, and that these files are git-ignored and belong to one checkout; none of that is repeated here. On every other branch — a path you were handed, a conversation input, a settled document that is not a PRD — read nothing extra. If the protocol cannot be found, do not stop: list the folder anyway, apply the rules below, say that the protocol was unavailable, and name the file you took.
+
+This skill's own rules: the subfolder is `prd`. List it. If one topic matches, read it and say which file you took; if several topics could be meant, ask which; if one topic has several dates, take the file with the latest trailing date. If the folder is missing or empty, ask for the file's path rather than searching elsewhere.
 
 ### Reading a settled document
 

@@ -10,7 +10,11 @@ SKILLS = ROOT / "skills" / "development"
 GRILL_ME = SKILLS / "nathan-grill-me"
 CODEBASE_SCAN = SKILLS / "codebase-scan"
 ACCESSIBILITY_REVIEW = SKILLS / "accessibility-review"
+TO_SPEC = SKILLS / "to-spec"
 SHARED = GRILL_ME / "references" / "save-folder-protocol.md"
+
+# The protocol's section for a skill opening a file it did not write.
+READER_HEADING = "Reading a file another skill saved"
 
 # Each saving skill's own rules: skill folder, subfolder, filename key and the
 # pattern for its replace-or-resume rule.
@@ -65,6 +69,24 @@ def normalise(text):
 def states_protocol(path):
     text = normalise(read(path))
     return all(re.search(pattern.lower(), text) for pattern in SHARED_ITEMS.values())
+
+
+def section(text, heading):
+    """Return the body of the `## heading` section, or "" when it is absent."""
+    match = re.search(
+        rf"^##\s+{re.escape(heading)}\s*$(.*?)(?=^##\s|\Z)",
+        text,
+        re.MULTILINE | re.DOTALL,
+    )
+    return match.group(1) if match else ""
+
+
+def paragraph_mentioning(text, needle):
+    """Return the blank-line-separated paragraph containing `needle`, or ""."""
+    for block in re.split(r"\n\s*\n", text):
+        if needle in block:
+            return normalise(block)
+    return ""
 
 
 class SaveProtocolTest(unittest.TestCase):
@@ -188,6 +210,57 @@ class SaveProtocolTest(unittest.TestCase):
                 self.assertNotRegex(
                     text, r"\.\.?/[^\s)`]*(nathan-grill-me|save-folder-protocol)"
                 )
+
+    def test_shared_protocol_tells_a_reader_where_a_saved_file_is_and_how_it_is_named(self):
+        reader = normalise(section(read(SHARED), READER_HEADING))
+        self.assertNotEqual("", reader, f"no `## {READER_HEADING}` section")
+        # Addressed to a skill opening a file some other skill wrote.
+        self.assertRegex(reader, r"did not write")
+        self.assertRegex(reader, SHARED_ITEMS["project root"].lower())
+        self.assertRegex(reader, SHARED_ITEMS["filename shape"].lower())
+        self.assertRegex(reader, r"git-ignored")
+        self.assertRegex(reader, r"belongs? to (one|a single) checkout")
+
+    def test_shared_protocol_opening_covers_a_reader_as_well_as_a_saving_skill(self):
+        opening = paragraph_mentioning(read(SHARED), "owns this file")
+        self.assertRegex(opening, r"read")
+
+    def test_to_spec_does_not_restate_the_filename_shape_or_the_project_root(self):
+        text = normalise(read(TO_SPEC / "SKILL.md"))
+        # Key-agnostic: to-spec used to write `<topic>-`, not `<key>-`, so a
+        # pattern tied to `<key>-` would pass without asserting anything.
+        self.assertNotRegex(text, r"<[^>]+>-<yyyy-mm-dd>\.md")
+        self.assertNotRegex(text, SHARED_ITEMS["project root"].lower())
+
+    def test_to_spec_references_the_protocol_without_a_cross_skill_relative_path(self):
+        text = read(TO_SPEC / "SKILL.md")
+        self.assertIn("save-folder-protocol.md", text)
+        self.assertIn("skill catalogue", normalise(text))
+        self.assertNotRegex(
+            text, r"\.\.?/[^\s)`]*(nathan-grill-me|save-folder-protocol)"
+        )
+
+    def test_to_spec_keeps_its_subfolder_latest_date_rule_and_ambiguity_rule(self):
+        text = normalise(read(TO_SPEC / "SKILL.md"))
+        self.assertIn("subfolder is `prd`", text)
+        self.assertRegex(text, r"latest trailing date")
+        self.assertRegex(text, r"several topics could be meant, ask")
+        self.assertRegex(text, r"say which file you took")
+        self.assertRegex(text, r"missing or empty, ask for the file's path")
+
+    def test_to_spec_reads_the_protocol_only_when_it_locates_the_prd_itself(self):
+        pointer = paragraph_mentioning(read(TO_SPEC / "SKILL.md"), "save-folder-protocol.md")
+        self.assertNotEqual("", pointer, "no paragraph points at the protocol")
+        # The read hangs off the locate-it-yourself branch, not the skill's start.
+        self.assertRegex(pointer, r"only .{0,80}locate the prd yourself")
+
+    def test_to_spec_proceeds_and_says_so_when_the_protocol_is_missing(self):
+        text = normalise(read(TO_SPEC / "SKILL.md"))
+        self.assertRegex(text, r"cannot be found, do not stop")
+        self.assertRegex(text, r"say that the protocol was unavailable")
+        self.assertRegex(text, r"name the file you took")
+        # Reading has no irreversible write to guard.
+        self.assertNotIn("do not save from memory", text)
 
 
 if __name__ == "__main__":
