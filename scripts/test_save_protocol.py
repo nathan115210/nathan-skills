@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / "skills" / "development"
 GRILL_ME = SKILLS / "nathan-grill-me"
 CODEBASE_SCAN = SKILLS / "codebase-scan"
+ACCESSIBILITY_REVIEW = SKILLS / "accessibility-review"
 SHARED = GRILL_ME / "references" / "save-folder-protocol.md"
 
 # One pattern per shared item in the protocol. A file states the protocol only
@@ -100,6 +101,32 @@ class SaveProtocolTest(unittest.TestCase):
             text, r"rescan on the same day with the same scope replaces that day's file"
         )
         self.assertRegex(text, r"the user may decline the file")
+
+    def test_accessibility_review_does_not_restate_the_gitignore_and_symlink_steps(self):
+        text = read(ACCESSIBILITY_REVIEW / "SKILL.md")
+        for step in RESTATED_STEPS:
+            hits = [
+                line
+                for line in text.splitlines()
+                if re.search(step, line, re.IGNORECASE)
+            ]
+            self.assertEqual([], hits, f"restates {step}")
+
+    def test_accessibility_review_keeps_identity_header_and_scope_line(self):
+        text = normalise(read(ACCESSIBILITY_REVIEW / "SKILL.md"))
+        self.assertIn("subfolder is `accessibility-audit`", text)
+        self.assertIn("`<key>` is `<topic>`", text)
+        self.assertRegex(
+            text, r"re-review on the same day of the same topic replaces that day's file"
+        )
+        self.assertRegex(text, r"the user may decline the file")
+        self.assertIn("one-line identity header", text)
+        self.assertIn("the scope line", text)
+        self.assertIn("read the save-folder protocol", text)
+
+    def test_accessibility_review_reference_uses_no_cross_skill_relative_path(self):
+        text = read(ACCESSIBILITY_REVIEW / "SKILL.md")
+        self.assertNotRegex(text, r"\.\./[\w-]+/references")
 
 
 if __name__ == "__main__":

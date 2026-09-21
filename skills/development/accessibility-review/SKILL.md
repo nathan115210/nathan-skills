@@ -115,17 +115,20 @@ Preserve whichever of these applies to the path you ran.
 
 ## Completion and handoff
 
-The report is the deliverable. After presenting it in full, **save it to
-`<project root>/.nathan-skills/accessibility-audit/<topic>-<YYYY-MM-DD>.md`** and give the
-user its absolute path. The project root is the git top-level of the working directory, or
-the working directory outside a repository; `<topic>` is a short lowercase hyphenated name
-for the reviewed scope; the date is today in local time. On the first write, create the
-folder and, if `.nathan-skills/.gitignore` does not exist, create it containing `*`, so
-the folder ignores itself and no tracked file changes. Never overwrite an existing
-`.gitignore`; stop if `.nathan-skills` is a symlink. A re-review on the same day of the same
-topic replaces that day's file. Skip the file only if the user says they don't want one, or the active tool mode and
-permissions prevent writing it — in that case say so plainly rather than
-claiming it was saved.
+The report is the deliverable. After presenting it in full, save it and give the user
+its absolute path.
+
+- Read the save-folder protocol (`save-folder-protocol.md`, in the `nathan-grill-me`
+  skill's references folder) before the first write; locate it through the runtime's
+  skill catalogue, the sibling skill in this source tree, or the project's configured
+  skill locations. It covers the project root, the filename shape, first-write setup,
+  the path announcement, write failures and the working-document disclaimer, and is not
+  repeated in this skill.
+- This skill's own rules: the subfolder is `accessibility-audit`, and `<key>` is
+  `<topic>`, a short lowercase hyphenated name for the reviewed scope. A re-review on the
+  same day of the same topic replaces that day's file.
+- The user may decline the file. Skip it only if they do not want one, or the protocol's
+  write-failure rule applies, and say so plainly.
 
 The saved file is the report as presented, unabridged, including the closing
 note's limits. Two additions:
@@ -135,9 +138,7 @@ note's limits. Two additions:
 - **The scope line**: which path ran (design, code, both) and exactly which
   artefact, files or paths were inspected.
 
-Write the whole report, not a summary. The file is a working document —
-git-ignored, belonging to this checkout only, not backed up, not travelling to another
-machine. Say so when handing it over.
+Write the whole report, not a summary.
 
 **Findings are not decisions.** This report says what is broken; it does not say
 which of it gets fixed, in what order, or what "fixed" has to mean. Those are the
