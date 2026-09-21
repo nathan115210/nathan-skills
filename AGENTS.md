@@ -89,6 +89,14 @@ details or personal history from the local decision record.
   changing docs. Parsing YAML, finding a symlink, or a model saying it succeeded
   is not runtime verification. An environment or usage-limit failure does not
   prove a skill failed or passed.
+- **Runtime tests of skills are run by the user, in `agy` only.** Headless
+  `agy -p` cannot prompt for shell permissions and does not reliably expand
+  explicit-only skills, so an agent does not launch `agy` to test. Give the user
+  the scratch repo, the exact steps and what to look for; then read only the
+  result (`git status`, `find`, a `grep` or the tail of a file), never a whole
+  transcript. Never start a Claude Code or Codex session to test. A result from
+  `agy` says nothing about Claude Code or Codex, so the docs mark those untested
+  for that change.
 - **Every change a tool runs needs a changeset.** Run `npm run changeset` in the
   same change that adds, renames, or alters a skill, global script, or file in
   `instructions/`. No

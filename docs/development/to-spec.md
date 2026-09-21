@@ -19,13 +19,13 @@ You type it. It will not fire on its own.
 
 | Where you are | What to run |
 | --- | --- |
-| Requirements are still open | [grill-me](./grill-me.md) first |
+| Requirements are still open | [nathan-grill-me](./nathan-grill-me.md) first |
 | Decisions settled, you want them tracked | `to-spec` |
 | An issue exists but is missing its spec | `to-spec` — it writes back into that issue |
 | You want the work split into tickets | [to-tickets](./to-tickets.md) |
 
 Normally you run it in a **fresh session**, pointed at the PRD
-[grill-me](./grill-me.md) wrote. Reading a settled document is the normal input;
+[nathan-grill-me](./nathan-grill-me.md) wrote. Reading a settled document is the normal input;
 synthesising the current conversation is the exception, for a short discussion
 that never produced a document.
 
@@ -40,9 +40,10 @@ that; the conversation does not.
   (`viewerPermission`), because read access alone makes a repository look usable
   right up to the moment it isn't.
 - Settled decisions, in a document or in this conversation.
-- The PRD is not in your project — it is in `~/Downloads`, under whatever name
-  you confirmed when it was written. Nothing in the repository points at it, so
-  expect to be asked which file to read.
+- The PRD is in `.nathan-skills/prd/` under the project root, git-ignored. The
+  skill lists that folder and reads the match; it asks only if several topics
+  could be meant. The folder belongs to one checkout, so from a different
+  worktree or a fresh clone expect to be asked for the file's path.
 
 ## Seams, before any prose is written
 
@@ -61,10 +62,12 @@ proposed by the skill and approved by you.
 
 ## What the issue deliberately does not contain
 
-- **No file paths and no code snippets.** They go stale faster than anything
-  else, and a stale spec is worse than a missing one. The exception is a snippet
-  that encodes a decision more precisely than prose can — a state machine, a
-  schema, a type shape.
+- **No code snippets, and file paths in one place only.** They go stale faster
+  than anything else, and a stale spec is worse than a missing one. Paths appear
+  in a single optional "Code locations (as of `<revision>`)" line, so a reader can
+  see which version of the code they describe; the builder reads current source.
+  The snippet exception is a snippet that encodes a decision more precisely than
+  prose can — a state machine, a schema, a type shape.
 - **No breakdown and no dependency ordering in the body.** Both are expressed
   later as native sub-issue and blocking relations, which are queryable state.
   Prose would be a second copy that drifts from it.
@@ -84,7 +87,7 @@ work is that tickets are disposable and the spec is not.
 
 **It says my spec "is not yet buildable". Why won't it just fill in the gaps?**
 Because inventing acceptance criteria is how a spec ends up asserting things
-nobody agreed to. The gap is real: go back to [grill-me](./grill-me.md) and
+nobody agreed to. The gap is real: go back to [nathan-grill-me](./nathan-grill-me.md) and
 settle it. The line stays in the issue so whoever reads it next knows.
 
 **Publishing failed. Where did my spec go?**
@@ -126,18 +129,48 @@ PRD is expected to go stale.
   states the total.
 - It names its input up front — which document, which sections it read and which
   it skipped.
-- Every criterion in the issue is one you remember deciding.
+- Every criterion in the issue is one you remember deciding, and it still carries
+  the concrete values you settled on (the exact output, amount or message), not a
+  paraphrase. Under each test name sits its precondition, expected result and how
+  it is observed, when the PRD gave them.
 - Exactly one issue exists afterwards, and no new file appeared anywhere.
 
 ## Known limitations
 
 - **Codex has partial runtime coverage (2026-09-14, CLI 0.154.0-alpha.6.2).**
   Discovery, one implicit-invocation scenario and full template reading were
-  checked. Normal explicit runs checked the PRD identity line, rejected a
-  different project, and stopped without writing files when the required
+  checked. Normal explicit runs checked the PRD identity line (a check the skill
+  no longer makes, now that the PRD lives in the project), and stopped without
+  writing files when the required
   `gh repo view --json nameWithOwner,viewerPermission` check found no Git
   repository. Successful permission checks, seam confirmation and issue
-  publication remain untested. agy runtime behaviour remains untested.
+  publication remain untested.
+- **agy finds the PRD in `.nathan-skills/prd/` (2026-09-21, agy 1.2.7).** In an
+  isolated scratch repository holding one PRD written by `nathan-grill-me`,
+  `/to-spec` read `add-verbose-flag-2026-09-21.md` in full without being given a
+  path, reported that the PRD still had open requirements, and stopped without
+  writing anything; the repository had no GitHub remote, and it said publishing was
+  blocked. Not tested: several topics or several dates in the folder, a missing
+  folder and permission checks.
+- **agy published a spec issue (2026-09-21, agy 1.2.7).** With a settled PRD in
+  `.nathan-skills/prd/` and a private GitHub remote, `/to-spec` read the PRD in
+  full, proposed two seams (`greet` return value; CLI standard output), asked for
+  confirmation, and published issue #1. The issue carried the seams, all four
+  acceptance criteria with their test names spelled exactly as in the PRD, and a
+  "Combined Behavior" section stating none was settled. No file was written to the
+  repository and nothing was staged. The PRD was written by hand rather than by
+  `nathan-grill-me`, so this does not show that `nathan-grill-me`'s own output
+  is accepted.
+- **After the template fix, the same PRD kept its concrete values (2026-09-21, agy
+  1.2.7).** Re-run on a fresh clone, `/to-spec` published issue #4 with each
+  criterion in the PRD's own words (`prints HI ANN`, `prints hi ann`, `prints HI
+  WORLD`) and, under each test name, a line giving the precondition, expected
+  result and observable (for example `greet("ann", upper=True) == "HI ANN"`,
+  observed as the return value of `greet`). It marked the CLI seam as new. That
+  seam was first proposed as "existing"; it changed only because the user asked,
+  so treat the label as something to check at the confirmation step. The prose
+  sections still name `cli.py`, which the template's no-file-paths rule forbids;
+  the commands inside the criteria are transcribed from the PRD.
 - **The `disallowed-tools` field is not a Codex hard write barrier.** A separate
   diagnostic explicitly overrode the skill's prose prohibition and successfully
   created a canary using `apply_patch`. This proves that tool was available; it
@@ -147,10 +180,10 @@ PRD is expected to go stale.
 - The downstream step, [to-tickets](./to-tickets.md), has runtime evidence only
   for the GitHub APIs it depends on, not for an end-to-end run.
 - Large documents are read in parts; a PRD without stable section headings is
-  hard to read selectively, which is why `grill-me` is required to write them.
+  hard to read selectively, which is why `nathan-grill-me` is required to write them.
 
 ## Where it fits
 
-Upstream is [grill-me](./grill-me.md), which does the deciding this skill only
+Upstream is [nathan-grill-me](./nathan-grill-me.md), which does the deciding this skill only
 records. Downstream is [to-tickets](./to-tickets.md). See
 [the workflow overview](./README.md).

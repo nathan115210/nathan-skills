@@ -23,7 +23,7 @@ You type it. It will not fire on its own.
 
 | Where you are | What to run |
 | --- | --- |
-| Requirements are still open | [grill-me](./grill-me.md) first |
+| Requirements are still open | [nathan-grill-me](./nathan-grill-me.md) first |
 | Decisions settled, nothing tracked yet | [to-spec](./to-spec.md) first |
 | A spec issue exists and the work is too big for one session | `to-tickets` |
 | A spec issue exists and you will finish it in one sitting | Nothing — splitting buys you nothing here |
@@ -53,7 +53,7 @@ The spec already settled four things, and this skill treats all four as closed:
 | Settled | Here |
 | --- | --- |
 | The **seams** | Used, quoted from the spec. Never re-chosen and never added to — seam count is a whole-codebase property, so it is decided once per spec. |
-| The **requirements** | Not reopened. An open requirement stops the skill and sends you back to [grill-me](./grill-me.md). |
+| The **requirements** | Not reopened. An open requirement stops the skill and sends you back to [nathan-grill-me](./nathan-grill-me.md). |
 | The **test names** | Transcribed and allocated. Never invented. |
 | The **combined behavior** | Left on the parent. It belongs to the whole, and the whole is only visible there. |
 
@@ -120,7 +120,7 @@ read-back; a remaining mismatch is reported as a partial publish.
 ## The scan path
 
 `codebase-scan` is not part of the chain and produces no spec. Its report used
-to reach the tracker only through `grill-me` and `to-spec`, which meant a full
+to reach the tracker only through `nathan-grill-me` and `to-spec`, which meant a full
 interview before anything was written down — expensive, and wrong when the
 findings themselves are not in dispute and you just want them tracked.
 
@@ -142,11 +142,11 @@ Everything else — exploring the codebase, the approval gate, publication, the
 
 **Nothing published this way is buildable, and that is not a defect.** These
 tickets record what was found and where it sits in the queue. To start one, run
-`grill-me` on that issue in a new session and `to-spec` back into it; that is
+`nathan-grill-me` on that issue in a new session and `to-spec` back into it; that is
 where the interview happens, once, for the finding you actually decided to fix.
 
 Two things it will not do: it will not take a scan report handed over in a fresh
-session (that report's decisions were never made — it enters at `grill-me`), and
+session (that report's decisions were never made — it enters at `nathan-grill-me`), and
 it will not ticket the whole candidate list because you approved something else.
 You name the findings.
 
@@ -240,18 +240,18 @@ No. It takes an issue. If you only have a document, the missing step is
 the one exception, and only in the session that produced it — see
 [the scan path](#the-scan-path).
 
-**Do I have to run `grill-me` on every scan finding before it can be tracked?**
+**Do I have to run `nathan-grill-me` on every scan finding before it can be tracked?**
 No, not any more. Tracking and deciding are separate: the scan path writes the
 findings to the board as not-buildable tickets without an interview, and
-`grill-me` happens later, on the one ticket you are about to start. Run
-`grill-me` first only when *which* findings are worth fixing is itself the
+`nathan-grill-me` happens later, on the one ticket you are about to start. Run
+`nathan-grill-me` first only when *which* findings are worth fixing is itself the
 question.
 
 **My spec has no test names. Will it refuse?**
 No. It splits anyway and marks every ticket not buildable. Splitting an
 unbuildable spec is still useful — you see the shape of the work — but no ticket
 from it should be started. Settle the criteria in
-[grill-me](./grill-me.md), re-run [to-spec](./to-spec.md), then re-run this.
+[nathan-grill-me](./nathan-grill-me.md), re-run [to-spec](./to-spec.md), then re-run this.
 
 **What if a test name fits none of the slices?**
 It reports it and does not drop it. Either the cut is wrong or the spec
@@ -313,7 +313,8 @@ ticket marked not buildable.
 - It quotes the spec's seams back at you instead of proposing its own.
 - It puts the numbered breakdown to you and waits, rather than publishing and
   then asking. Each proposed ticket includes the exact body GitHub will receive.
-- Every test name you remember deciding lands on exactly one ticket, unchanged.
+- Every test name you remember deciding lands on exactly one ticket, unchanged —
+  including its formatting and any precondition or expected-result line under it.
 - It names the destination board in the preview, before you approve — or says
   there is none, and why. On the scan path it asks that once, about the tracking
   parent, and never again.
@@ -335,6 +336,26 @@ ticket marked not buildable.
 ## Known limitations
 
 What has runtime evidence here, and what does not, in three tiers.
+
+**Verified end to end in agy** — 2026-09-21, agy 1.2.7. Against a private
+scratch repository with no Project, `/to-tickets` on a spec issue (#1, published
+by `to-spec`) showed a two-ticket breakdown with full bodies, asked three
+confirmation questions, and after approval created issues #2 and #3. GitHub then
+showed both as native sub-issues of #1, #3 with a native `blocked_by` edge on #2,
+and all four of the spec's test names present exactly once across the two
+tickets. No file was written to the repository by the skill. Not confirmed from
+outside the session: that the temporary body files were deleted, since agy's
+`$TMPDIR` is not the one an agent here can inspect. Not tested: a Project board,
+the scan path, an existing sub-issue on the parent, and Claude Code or Codex.
+
+**Second run after the template fix** — same day, on a spec whose test names carry
+a precondition, expected-result and observable line. Issues #5 and #6 came out as
+native sub-issues of #4, #6 blocked by #5, and each of the four test names, with
+its backticks and its detail line, sat on exactly one ticket. The function-level
+tests carried "observable: return value of `greet`" and the command-level tests
+"observable: stdout". The skill reported a byte-for-byte `diff` against the
+approved bodies and deleted scratch files; both are its own report, not checked
+from outside.
 
 **Verified against a real repository** — 2026-09-15, `gh` 2.80.0. Creating a
 parent and two children, attaching both as sub-issues by `id`, adding a

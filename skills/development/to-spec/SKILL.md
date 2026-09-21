@@ -20,7 +20,7 @@ Exactly one of:
 
 | Input | Where it is | How to read it |
 | --- | --- | --- |
-| **A document whose decisions are settled** — the normal case | Typically a planning PRD in `~/Downloads`, named whatever the user confirmed when it was written; may also be someone else's spec, a design doc, meeting notes — format is not assumed | Read it in parts. See below. |
+| **A document whose decisions are settled** — the normal case | Typically a planning PRD in `.nathan-skills/prd/`; may also be someone else's spec, a design doc, meeting notes — format is not assumed | Read it in parts. See below. |
 | A discussion that just finished — the exception | Already in this conversation | Read nothing. Synthesize what is here. |
 
 If neither is present, stop and say so. Do not run an interview to manufacture one.
@@ -29,9 +29,7 @@ If neither is present, stop and say so. Do not run an interview to manufacture o
 
 The second mode is for a short discussion held right here that never produced a document. If a document exists, read it rather than the conversation, even when you were present for the conversation — the file is what the next reader will have.
 
-**The document is not in the project.** Planning PRDs are written to `~/Downloads`, so nothing in the repository points at one and no search of the project will find it, and its filename follows no rule — it is whatever the user confirmed at the time. Ask which file to read, or list `~/Downloads` for `prd-*.md` and confirm the match before reading.
-
-Then **check the file's identity line** — its first line names the project and repository it plans. If it names a different project, or has no identity line at all, stop and ask rather than specifying the wrong work. Several projects share that folder, and transcribing the wrong document produces a spec that looks right.
+**Find the PRD in `.nathan-skills/prd/`.** Planning PRDs are git-ignored files named `<topic>-<YYYY-MM-DD>.md` under the project root (the git top-level of the working directory). List that folder. If one topic matches, read it and say which file you took; if several topics could be meant, ask which; if one topic has several dates, take the file with the latest trailing date. The folder belongs to one checkout, so a different worktree or a fresh clone will not have it — if the folder is missing or empty, ask for the file's path rather than searching elsewhere.
 
 ### Reading a settled document
 
@@ -51,7 +49,7 @@ A settled document can be far larger than one read. Before reading any of it:
 
 **Not yours:**
 
-- **Interviewing for requirements.** If a requirement is still open, name it and stop. Resolving it is `grill-me`, in its own session.
+- **Interviewing for requirements.** If a requirement is still open, name it and stop. Resolving it is `nathan-grill-me`, in its own session.
 - **Splitting the work into tickets.** `to-tickets` is the only splitter.
 - **Inventing acceptance criteria or test names.** The user sets what counts as correct. You transcribe.
 - **Writing any document.** No `.md` file, no `.scratch/` directory, no local copy of the spec. The only exit is an issue. The planning PRD that may have fed this spec is an *input*; it is not maintained afterwards and is expected to go stale.
@@ -94,10 +92,10 @@ Read `references/spec-template.md` and follow it.
 
 Four hard constraints:
 
-- **No file paths and no code snippets.** They go stale faster than anything else in a spec, and a stale spec is worse than a missing one. *Exception:* when a snippet encodes a decision more precisely than prose can — a state machine, a reducer, a schema, a type shape — inline it inside the decision it belongs to, note that it came from a prototype, and keep only the decision-dense part. Not a working demo.
+- **No code snippets, and file paths only in the one dated "Code locations" line the template provides.** Snippets and paths go stale faster than anything else in a spec, and a stale spec is worse than a missing one; the line names its revision so staleness is visible. *Snippet exception:* when a snippet encodes a decision more precisely than prose can — a state machine, a reducer, a schema, a type shape — inline it inside the decision it belongs to, note that it came from a prototype, and keep only the decision-dense part. Not a working demo.
 - **No breakdown and no dependency ordering.** Do not write "this splits into three parts" or "A must land before B" in the body. Both get expressed later as native sub-issue and blocking relations, which are queryable state. Prose would be a second copy of that state, and it would drift from it.
 - **Note discrepancies.** Where the spec departs from the input — a decision the codebase has already overtaken, two sections of the document that contradict each other, a requirement that cannot be expressed at the chosen seams — say so in the issue, with the reason. Do not silently reconcile.
-- **Transcribe; do not invent.** If the discussion produced a list of test names, it goes into the issue as written. That list is the workflow's only evidence that the requirements are specific enough to build against, and it dies with the session if you leave it in the conversation. If the input has no test names, write none — and do not triage the gap; `to-tickets` marks which tickets are missing a list.
+- **Transcribe; do not invent.** If the discussion produced a list of test names, it goes into the issue as written — with each criterion's concrete values, and each test name's precondition, expected result and observable when the input states them. That list is the workflow's only evidence that the requirements are specific enough to build against, and it dies with the session if you leave it in the conversation. If the input has no test names, write none — and do not triage the gap; `to-tickets` marks which tickets are missing a list.
 
 ### 4. Publish
 
@@ -138,13 +136,12 @@ Do not invoke it. Skills in this workflow are not chained inside one session; th
 ## Verification
 
 - One input mode was used, and it was named at the start — not reconstructed at the end.
-- If the input was a document, its identity line was checked and it names this project.
 - The tracker was confirmed usable before the work was done.
 - The codebase was explored before seams were chosen.
 - The seam count is stated, is as low as the work allows, and was confirmed by the user.
-- No file paths or code snippets, except prototype snippets marked as such.
+- No code snippets except prototype snippets marked as such, and no file path outside the dated "Code locations" line.
 - No breakdown and no dependency ordering in the body.
-- Every acceptance criterion and every test name in the issue — including the combined-behavior list — traces to the input. None were invented.
+- Every acceptance criterion and every test name in the issue — including the combined-behavior list — traces to the input. None were invented, and each criterion keeps the concrete values the input gave it.
 - The spec exists as an issue. No file was written.
 - If the input document was read in part, the sections read and skipped are named.
 - Any discrepancies between the spec and the input are noted and justified.

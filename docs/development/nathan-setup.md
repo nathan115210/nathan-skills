@@ -141,6 +141,13 @@ worse than no gate.
   helper tests (Python 3 on macOS), including setup/refresh without a report,
   preservation of existing reports, and rejection of the removed command.
   This change has not been exercised end to end inside a provider session.
+- **An end-to-end run in agy (2026-09-21, agy 1.2.7)** on a small scratch project
+  with a GitHub remote: `/nathan-setup` added only `AGENTS.md`, a `CLAUDE.md`
+  symlink to it and an ignored `.nathan-setup/` folder, ran the project's test
+  command, and reported Claude Code and agy ready and Codex not ready because it
+  was not on `PATH`. Not tested: refreshing an existing setup, or a run in Claude
+  Code or Codex. Note that its probes start a Claude Code session and an agy
+  session, so a setup run spends those tools' tokens.
 
 ## Where it fits
 
