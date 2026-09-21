@@ -1,11 +1,12 @@
-# grill-me
+# nathan-grill-me
 
-[SKILL.md](../../skills/development/grill-me/SKILL.md)
+[SKILL.md](../../skills/development/nathan-grill-me/SKILL.md)
 
 ## What it does
 
 Interviews you about what you are building until the requirements are specific
-enough to build against, and writes the result to a topic PRD in `~/Downloads`.
+enough to build against, and writes the result to a topic PRD in the project's git-ignored
+`.nathan-skills/prd/` folder.
 
 It asks one decision question at a time, with a recommendation and the trade-off
 behind it. It will not invent agreement: what you decided, what it merely
@@ -28,9 +29,9 @@ tested, or an existing issue whose acceptance criteria are vague.
 
 | Where you are | What to run |
 | --- | --- |
-| Requirements are still open | `grill-me` |
+| Requirements are still open | `nathan-grill-me` |
 | Decisions are settled, and you want them in an issue | [to-spec](./to-spec.md) — it does not interview |
-| An issue exists but says "handle errors properly" | `grill-me` first, then `to-spec` writes back into it |
+| An issue exists but says "handle errors properly" | `nathan-grill-me` first, then `to-spec` writes back into it |
 
 Planning may stop here. Not every piece of work needs an issue, and nothing in
 this skill pushes you onward.
@@ -42,17 +43,16 @@ The project should have been connected with
 rules and vocabulary. It is not a hard blocker: the skill can start from a bare
 idea with no project at all.
 
-## The PRD lands in ~/Downloads, not in your project
+## The PRD lands in `.nathan-skills/prd/`, ignored by git
 
-Nothing is written into the project being planned — not its root, not a docs
-directory, nowhere. The PRD is a working document in a scratch location:
+The PRD is written to `<project root>/.nathan-skills/prd/<topic>-<YYYY-MM-DD>.md`,
+a working document next to the project it plans but out of version control. The
+folder layout, self-ignoring `.gitignore` and per-checkout limit are described in
+[Where documents are saved](./README.md#where-documents-are-saved).
 
-- It is **not** version-controlled and does not travel with the project.
-- `~/Downloads` is shared by every project, so the skill **confirms the filename
-  with you before its first write** rather than picking one and risking an
-  overwrite. There is no naming rule to fall back on.
-- The file carries a one-line identity header naming the project and repository,
-  because its location no longer says which project it belongs to.
+What is specific to this skill: it does not ask you to confirm a filename — the
+folder is per project, so it states the full path once, when it first writes — and
+a later session on the same topic reuses the existing file, keeping its name.
 
 ## Why the file has to stand alone
 
@@ -121,15 +121,34 @@ will not quietly switch modes. Copy the draft out yourself.
 ## Known limitations
 
 - **Codex has partial runtime coverage (2026-09-14, CLI 0.154.0-alpha.6.2).**
-  Discovery and one implicit-invocation scenario were checked. An explicit run
-  waited for filename confirmation, then updated a Downloads PRD with the
-  project identity header and no observed writes to the target project. The
-  default read-only run reported that it could not save; saving was tested with
-  write access to Downloads. This does not verify a full interview, long-session
-  behaviour or recovery after compaction. agy runtime behaviour remains untested.
+  Discovery and one implicit-invocation scenario were checked. That run tested
+  the earlier `~/Downloads` behaviour (filename confirmation, identity header).
+  The `.nathan-skills/prd/` location, the self-ignoring `.gitignore` and
+  resume-by-topic are **unverified at runtime**. This does not verify a full
+  interview, long-session behaviour or recovery after compaction.
+- **agy's own `/grill-me` command took over the old name (2026-09-21, agy
+  1.2.7).** With the skill still named `grill-me`, a minimal early-end scenario
+  ("add a `--verbose` flag", then stop and save) ran twice in a scratch repository,
+  once headless and once interactively. Both times agy wrote `prd_verbose_flag.md`
+  to its own `~/.gemini/antigravity-cli/brain/` folder and created nothing under
+  `.nathan-skills/`. In the interactive run, `/grill-me` expanded to a different,
+  generic interview instruction and agy never read this skill's `SKILL.md`. That
+  command is built into the agy binary (its description, "Interview me to align
+  on a plan.", is in `~/.local/bin/agy` and in no file under `~/.gemini`), so it
+  cannot be removed from configuration. The skill was renamed `nathan-grill-me` to
+  avoid the clash.
+- **`/nathan-grill-me` works on agy (2026-09-21, agy 1.2.7).** In an isolated
+  scratch repository, the command was typed interactively, followed by "stop and
+  save the partial PRD now". agy created
+  `.nathan-skills/prd/add-verbose-flag-2026-09-21.md` and a `.nathan-skills/.gitignore`
+  containing `*`; `git status` showed only the ignored folder. Its closing message
+  gave the absolute path, the readiness status, the unresolved decisions and the
+  next step (`to-spec` in a new session), as the skill requires.
+- Not tested: a full interview, resume-by-topic on a later date, a refusal to
+  overwrite an existing `.gitignore`, `to-spec` reading the folder, and any run in
+  Claude Code or Codex.
 - The PRD has no version history and is not backed up with the project. If you
   delete it, it is gone.
-- macOS only: `~/Downloads` is assumed to exist, with no fallback rule.
 
 ## Where it fits
 

@@ -40,7 +40,7 @@ pointing outside the clone were all left untouched. Covered by
 ### Reading the output
 
 ```
-  link  /Users/you/.claude/skills/grill-me
+  link  /Users/you/.claude/skills/nathan-grill-me
   SKIP  /Users/you/.claude/skills/code-review -> symlink points outside this repo (...)
 
 central: /Users/you/dev/nathan-skills
@@ -109,7 +109,7 @@ and relink from the main checkout.
 ### Confirming what a tool will actually run
 
 ```bash
-readlink ~/.claude/skills/grill-me
+readlink ~/.claude/skills/nathan-grill-me
 ```
 
 The answer must be a path inside this repository. If it points anywhere else,
@@ -118,14 +118,14 @@ tools, since they can disagree:
 
 ```bash
 for d in ~/.claude/skills ~/.codex/skills ~/.gemini/config/skills; do
-  readlink "$d/grill-me"
+  readlink "$d/nathan-grill-me"
 done
 ```
 
 agy reads `~/.gemini/config/skills`, not `~/.gemini/skills`. A link in the
 second is invisible to it.
 
-The last check is the tool itself: type `/grill-me` and see whether it offers
+The last check is the tool itself: type `/nathan-grill-me` and see whether it offers
 the skill. A link can be perfect while the frontmatter keeps the tool from
 loading it — a skill's `name:` must equal its folder name.
 
@@ -198,7 +198,7 @@ use a fresh session to check discovery after uninstall.
 nathan-setup ─── once per project, before anything else
       │
       ▼
-  grill-me ────────► ~/Downloads/prd-<topic>.md
+  nathan-grill-me ─► .nathan-skills/prd/<topic>-<date>.md
       │                        │
       ▼                        ▼
    to-spec ──────────────► one spec issue  (+ the test seams, chosen once)
@@ -215,7 +215,7 @@ nathan-setup ─── once per project, before anything else
 | Step | Skill | Hands over | Built |
 | --- | --- | --- | --- |
 | Connect a project | [`nathan-setup`](./nathan-setup.md) | Project rules all three tools read | ✅ |
-| Decide what to build | [`grill-me`](./grill-me.md) | A topic PRD in `~/Downloads` | ✅ |
+| Decide what to build | [`nathan-grill-me`](./nathan-grill-me.md) | A topic PRD in `.nathan-skills/prd/` | ✅ |
 | Write it down once | [`to-spec`](./to-spec.md) | One spec issue, and the test seams | ✅ |
 | Split it | [`to-tickets`](./to-tickets.md) | Sub-issues and blocking relations | ✅ |
 | Build it | [`dev`](./dev.md) | A task worktree and verification status | ✅ |
@@ -228,19 +228,55 @@ began: the next thing to build is the top of the board.
 The chain has no QA step, and no step is planned. Integration QA is done by
 hand, outside these skills.
 
+## Where documents are saved
+
+Three skills leave a document behind. They all save it inside the project, in a
+folder git ignores, so nothing collides with another project's files:
+
+```
+<project root>/.nathan-skills/
+  .gitignore                     contains *
+  prd/                           nathan-grill-me              <topic>-<YYYY-MM-DD>.md
+  code-scan/                     codebase-scan         <scope>-<YYYY-MM-DD>.md
+  accessibility-audit/           accessibility-review  <topic>-<YYYY-MM-DD>.md
+```
+
+- **Self-ignoring.** The first write creates the folder and a `.gitignore`
+  containing `*`, so no tracked file changes. An existing `.gitignore` is never
+  overwritten, and a symlinked `.nathan-skills` is refused.
+- **Name.** The topic comes first, then the creation date in local time. A later
+  run on the same topic reuses the existing file whatever its date; `to-spec` takes
+  the latest date when one topic has several files.
+- **One checkout only.** Another worktree or a fresh clone does not have these
+  files, and they are not backed up with the project. Copy one across by hand if
+  you plan in one checkout and specify in another.
+- **No migration.** Files an earlier version wrote to `~/Downloads` are not moved.
+  Copy one into the matching folder to keep using it.
+- **Runtime status.** Checked on agy only, with one small scenario each:
+  `nathan-grill-me` (early-end save), `to-spec` (finding that PRD) and
+  `codebase-scan` (saving its report). `to-spec` (publishing) and `to-tickets`
+  (sub-issues and blocking) were then run end to end against a private scratch
+  repository. `dev` and `code-review` were run on a scratch ticket. The first time, `dev`
+  also wrote a sibling ticket's command-line parsing and `code-review` called it
+  compliant; the ticket's criterion was worded at the wrong level. After `to-spec`
+  and `to-tickets` began carrying the observable with each test name, `dev` on the
+  regenerated ticket changed only the function. `code-review` was not re-run on
+  that. `accessibility-review` is unverified. See
+  each skill's page.
+
 ## Where to start
 
 | You have | Start with |
 | --- | --- |
 | A project that has never used these skills | `nathan-setup`, once |
-| An idea, a proposal, or a vague requirement | `grill-me` |
+| An idea, a proposal, or a vague requirement | `nathan-grill-me` |
 | A finished discussion whose decisions are settled | `to-spec` |
-| An existing issue that is missing acceptance criteria | `grill-me`, then `to-spec` writes back into that issue |
+| An existing issue that is missing acceptance criteria | `nathan-grill-me`, then `to-spec` writes back into that issue |
 | A spec issue too big for one session | [`to-tickets`](./to-tickets.md) |
 | A buildable ticket or small unsplit spec issue | [`dev`](./dev.md) |
 
 Planning is allowed to stop at the PRD. Not every piece of work needs an issue,
-and nothing in `grill-me` forces you onward.
+and nothing in `nathan-grill-me` forces you onward.
 
 ## The one rule that decides readiness
 
@@ -256,7 +292,7 @@ Handles invalid orders
 ```
 
 A requirement that cannot produce a specific test name is not specific enough
-yet, and that is the signal to go back to `grill-me`. This is a necessary check,
+yet, and that is the signal to go back to `nathan-grill-me`. This is a necessary check,
 not a sufficient one: names can be specific while the preconditions and expected
 results still live only in the conversation that produced them.
 
@@ -289,7 +325,7 @@ target across a change is one.
 Each skill's page below carries its own known limitations.
 
 - [nathan-setup](./nathan-setup.md)
-- [grill-me](./grill-me.md)
+- [nathan-grill-me](./nathan-grill-me.md)
 - [to-spec](./to-spec.md)
 - [to-tickets](./to-tickets.md)
 - [dev](./dev.md)
@@ -305,17 +341,17 @@ uses its shared static criteria for applicable UI diffs. Each skill page states
 its current runtime coverage and limitations.
 
 It needs no prior step and it can stop at its report, which it saves to
-`~/Downloads/accessibility-audit-<topic>.md`. When the barriers it finds should
+`.nathan-skills/accessibility-audit/<topic>-<date>.md`. When the barriers it finds should
 be fixed and tracked, that file joins the chain at the top:
 
 ```
-accessibility-review ──► ~/Downloads/accessibility-audit-<topic>.md
+accessibility-review ──► .nathan-skills/accessibility-audit/<topic>-<date>.md
                                         │
                                         ▼
-                                   grill-me ──► ... (the chain above)
+                                   nathan-grill-me ──► ... (the chain above)
 ```
 
-It enters at `grill-me`, not at `to-spec`, because a findings list is not a set
+It enters at `nathan-grill-me`, not at `to-spec`, because a findings list is not a set
 of decisions: which barriers are in scope, in what order, and what "fixed" means
 for each are the user's calls, and `to-spec` only transcribes calls already made.
 
@@ -331,11 +367,11 @@ each with its own coverage rule, and each declaring what it did not look at. Its
 report, like `accessibility-review`'s, joins the chain at the top:
 
 ```
-codebase-scan ──► ~/Downloads/code-scan-<project>.md
+codebase-scan ──► .nathan-skills/code-scan/<scope>-<date>.md
                                  │
               ┌──────────────────┴──────────────────┐
               ▼                                     ▼
-         to-tickets                            grill-me ──► ... (the chain above)
+         to-tickets                            nathan-grill-me ──► ... (the chain above)
    (same session, findings you
     name; all not buildable)
 ```
@@ -347,9 +383,9 @@ tracking parent for the scan, one child per finding, every child marked not
 buildable, ordered by the scan's severity. That writes down what was found
 without an interview, and leaves what to do about it open.
 
-It still enters at `grill-me` when the open question is *which* findings are
+It still enters at `nathan-grill-me` when the open question is *which* findings are
 worth fixing, in what order, and what "fixed" means for each — those are the
 user's calls and everything downstream only transcribes calls already made. And
-a ticket the short path produced is not buildable: `grill-me` then `to-spec` on
+a ticket the short path produced is not buildable: `nathan-grill-me` then `to-spec` on
 that one issue is what makes it so. Either way anything that reaches the tracker
 reaches it through `to-tickets`, which is also where it gets its backlog place.

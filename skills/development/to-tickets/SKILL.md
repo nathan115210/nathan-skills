@@ -27,11 +27,11 @@ Exactly one of two, and they take different paths through this skill:
 | Input | Where it is | How to read it |
 | --- | --- | --- |
 | **A spec issue** — the normal case | GitHub, in the repository you are standing in | `gh issue view <n> --comments`. Read the body and the comments. |
-| **A confirmed `codebase-scan` findings list** — the scan path | In this conversation, where `codebase-scan` just produced it | Read nothing new. The findings are already here; the saved report in `~/Downloads` is their record. |
+| **A confirmed `codebase-scan` findings list** — the scan path | In this conversation, where `codebase-scan` just produced it | Read nothing new. The findings are already here; the saved report in `.nathan-skills/code-scan/` is their record. |
 
 If the user named neither, ask. Do not search the tracker for a plausible spec — splitting the wrong issue produces a breakdown that looks right.
 
-**Do not accept a file as a spec.** A planning PRD is `grill-me`'s output and `to-spec`'s input; it is expected to be stale by now. If the user offers a document instead of an issue, the missing step is `to-spec`, in its own session.
+**Do not accept a file as a spec.** A planning PRD is `nathan-grill-me`'s output and `to-spec`'s input; it is expected to be stale by now. If the user offers a document instead of an issue, the missing step is `to-spec`, in its own session.
 
 The body holds the specification; the comments hold process records. Both are input — a correction that arrived as a comment is still a decision.
 
@@ -41,13 +41,13 @@ The body holds the specification; the comments hold process records. Both are in
 is a findings list, and a findings list has no seams and no test names — so every
 ticket this path publishes is **not buildable**, by construction, and says so in
 its own body. That is the honest result, not a gap to fill: the tickets record
-what was found and where it sits in the backlog order, and `grill-me` then
+what was found and where it sits in the backlog order, and `nathan-grill-me` then
 `to-spec` is what makes any one of them buildable.
 
 This path is available only when `codebase-scan` produced those findings **in
 this same session** and the user has said which of them become tickets. A report
 file handed over in a fresh session is not this input — its decisions were never
-made, so it enters at `grill-me`.
+made, so it enters at `nathan-grill-me`.
 
 Four things differ from the spec path. Nothing else does:
 
@@ -86,7 +86,7 @@ Seam count is a whole-codebase property, which is why it is settled once per spe
 
 **Not yours:**
 
-- **Interviewing for requirements.** If a requirement is still open, name it and stop. Resolving it is `grill-me`, in its own session.
+- **Interviewing for requirements.** If a requirement is still open, name it and stop. Resolving it is `nathan-grill-me`, in its own session.
 - **Choosing, adding or moving seams.** `to-spec` is the only place seams are decided.
 - **Inventing acceptance criteria or test names.** The user sets what counts as correct. You transcribe and allocate.
 - **Writing any document.** No `.md` file, no `.scratch/` directory, no local file per ticket. The only exit is issues. A ticket in a file is the second record this workflow exists to avoid.
@@ -130,7 +130,7 @@ before anything else. It is one issue, and its body is the scan's own record:
 - **Title** — `Codebase scan: <project> @ <short revision>`.
 - **Body** — the report's identity header, its scope line and its per-axis
   not-covered declarations, verbatim; then the absolute path of the saved
-  report, labelled as a scratch file that is not version-controlled.
+  report, labelled as a git-ignored local file that is not version-controlled.
 - **Nothing else.** The findings do not go in the body — each one is a child, and
   a copy of it here is the second record this skill exists to avoid.
 
@@ -609,11 +609,11 @@ them behind creates the second record this skill exists to avoid.
 ### 9. Hand off
 
 Say plainly what comes next: work down the board from the top, and run `dev` on
-the first buildable ticket on it. A ticket marked not buildable needs `grill-me` and `to-spec` again before implementation; splitting did not settle its missing criteria.
+the first buildable ticket on it. A ticket marked not buildable needs `nathan-grill-me` and `to-spec` again before implementation; splitting did not settle its missing criteria.
 
 On the scan path that covers every ticket published, so say it once about the
 batch: these are tracked and ordered, none is buildable, and the top one becomes
-buildable by running `grill-me` on it in a new session and then `to-spec` back
+buildable by running `nathan-grill-me` on it in a new session and then `to-spec` back
 into that same issue.
 
 Then print one ready-to-paste line, with the numbers you just created filled in, for assigning the batch to a milestone:
