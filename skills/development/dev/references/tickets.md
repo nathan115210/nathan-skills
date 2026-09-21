@@ -39,7 +39,7 @@ invent acceptance test names to make a missing allocation look complete.
 
 A ticket carrying the not-buildable line, no concrete test names, an unresolved
 requirement or a conflicting allocation cannot start. Name the gap and leave
-implementation untouched. Requirements and spec gaps return to `grill-me` /
+implementation untouched. Requirements and spec gaps return to `nathan-grill-me` /
 `to-spec`; allocation or slicing gaps return to `to-tickets`, each started by
 the user. Do not rewrite the parent or ticket yourself.
 

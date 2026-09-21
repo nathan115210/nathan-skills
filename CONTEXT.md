@@ -15,7 +15,7 @@ current implementation status.
 | Source repository | This repository, which maintains skills, shared helpers and their human-facing documentation. |
 | Global communication preferences | Always-on response-style instructions shared across tools, independent of skill invocation and project workflow. |
 | Target project | The project a skill is planning, setting up or developing. Its files and rules are separate from this repository's maintenance files and rules. |
-| Topic PRD | The planning document produced by `grill-me` in the user's Downloads folder, under a confirmed filename and with a project identity header. |
+| Topic PRD | The planning document produced by `nathan-grill-me` in the project's git-ignored `.nathan-skills/prd/` folder, named `<topic>-<YYYY-MM-DD>.md`. |
 | Spec | Settled requirements and decisions recorded in one GitHub issue by `to-spec`. It is content in an issue, not a second local specification file. |
 | Issue | A GitHub work item. A spec issue can later have sub-issues; it is not declared a parent merely because it contains a spec. |
 | Task worktree | The Git checkout assigned to one implementation ticket; it has its own working tree and index but shares refs and is not a sandbox. |

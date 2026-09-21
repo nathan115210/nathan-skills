@@ -11,9 +11,10 @@ those from questions that require a running interface.
 
 For a combined review it presents design and code reports, then reconciles their
 agreement, differences and coverage gaps. It changes nothing in the project and
-publishes nothing. The single file it writes is its own report, saved to
-`~/Downloads/accessibility-audit-<topic>.md` so the findings survive the session
-that produced them.
+publishes nothing. The single file it writes is its own report, saved to the
+git-ignored `.nathan-skills/accessibility-audit/<topic>-<YYYY-MM-DD>.md` so the
+findings survive the session that produced them. See
+[Where documents are saved](./README.md#where-documents-are-saved).
 
 ## When to reach for it
 
@@ -60,12 +61,12 @@ panel or silently expand a small diff into a whole-repository audit.
 
 **It found real bugs. How do they get fixed?**
 Not here. The report names barriers; it does not decide which are in scope, in
-what order, or what counts as fixed. Take the saved report to `grill-me` in a
+what order, or what counts as fixed. Take the saved report to `nathan-grill-me` in a
 new session — that is where findings become acceptance criteria and test names,
 and `to-spec` turns those into an issue. The review session's context is spent
 on the review, which is why the report is a file and not a conversation.
 
-**Can I skip `grill-me` and go straight to `to-spec`?**
+**Can I skip `nathan-grill-me` and go straight to `to-spec`?**
 Only when you have already decided, yourself, which findings are in scope and
 what each one's acceptance criteria are. `to-spec` transcribes settled
 decisions; a findings list is not one. Nothing stops you — but the skill will
@@ -80,7 +81,7 @@ not propose it, because choosing what to fix is your call, not the reviewer's.
 - Unobservable behaviour is listed as a runtime/manual check, not a confirmed bug.
 - The saved report opens with an identity line naming the project, states the
   scope that ran, and contains the report in full rather than a summary.
-- It ends by pointing at `grill-me` in a new session, and stops there: it does
+- It ends by pointing at `nathan-grill-me` in a new session, and stops there: it does
   not invoke the next skill, offer to run it, or start fixing anything.
 
 ## Known limitations
@@ -89,7 +90,7 @@ The supplied Nordea snapshot and persona provenance have not been independently
 verified. The design path cannot infer interaction behaviour from a still image.
 Static code analysis is not an exhaustive accessibility audit. One bounded
 Codex source-review example completed; design, combined, Claude Code and agy
-runtime paths remain untested. The report file and its handoff to `grill-me`
+runtime paths remain untested. The report file and its handoff to `nathan-grill-me`
 are unverified at runtime. A tool mode that forbids writes leaves the report in
 the conversation only, and it is then lost with the session.
 
@@ -97,5 +98,5 @@ the conversation only, and it is then lost with the session.
 
 Available for a focused design or code review, independently of the development
 chain: it needs no prior step and planning may stop at its report. When the
-findings should be fixed and tracked, its report is the input to `grill-me`,
+findings should be fixed and tracked, its report is the input to `nathan-grill-me`,
 which feeds `to-spec` as usual. See the [workflow overview](./README.md).

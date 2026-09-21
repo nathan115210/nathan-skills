@@ -9,7 +9,7 @@ Security Auditor plus a global accessibility pass. Three axes run separately —
 architecture, security, accessibility — each with its **own** coverage rule, and
 each declaring what it did not look at. The report opens with a severity-ordered
 candidate list, cross-referenced against the open issues, and is saved to
-`~/Downloads/code-scan-<project>.md`.
+`.nathan-skills/code-scan/<scope>-<YYYY-MM-DD>.md` (git-ignored, inside the project).
 
 The three coverage rules differ on purpose:
 
@@ -51,9 +51,11 @@ Nothing needs to be installed, built or run. The scan never executes the code.
 No. It reports. Every finding names a described fix without applying one.
 
 **Will it write into my repository?**
-No. The only file it writes is its own report, in `~/Downloads`. That is also
-the reason the report carries an identity header: nothing in a scratch directory
-says which project it came from.
+Not into anything git tracks. The only file it writes is its own report, in the
+git-ignored `.nathan-skills/code-scan/` folder (see
+[Where documents are saved](./README.md#where-documents-are-saved)). The report keeps its identity header — project and
+revision — because `to-tickets` reads it and it still says what was scanned once
+the file is copied out.
 
 **Does it create issues?**
 Not while scanning, and it sets no field on the board. It reads the open issues
@@ -63,7 +65,7 @@ title is fuzzy — and it is phrased as one.
 
 Afterwards, it offers to. See [After the report](#after-the-report).
 
-**Do I have to run `grill-me` on the report before anything can be tracked?**
+**Do I have to run `nathan-grill-me` on the report before anything can be tracked?**
 No. That was the old single exit and it made tracking a finding cost a whole
 interview. Say which findings you want tracked and run
 [to-tickets](./to-tickets.md) in the same session; the interview moves to the
@@ -90,7 +92,7 @@ neither for you.
 | You want | Run | You get |
 | --- | --- | --- |
 | These findings on the board now | [to-tickets](./to-tickets.md), here in this session | A tracking parent for this scan, one child per finding you named, all marked not buildable, ordered by severity |
-| To decide what is worth fixing first | [grill-me](./grill-me.md) on the report, in a **new** session | The normal chain: `grill-me` → `to-spec` → `to-tickets` |
+| To decide what is worth fixing first | [nathan-grill-me](./nathan-grill-me.md) on the report, in a **new** session | The normal chain: `nathan-grill-me` → `to-spec` → `to-tickets` |
 
 The first is cheap and writes nothing down that the scan did not already find —
 no ticket from it is buildable, and it says so in every body. Reach for the
@@ -167,6 +169,16 @@ Subagent delegation is verified on Claude Code only. Where delegation is
 unavailable the skill falls back to three sequential passes and must disclose
 that context isolation was lost; that fallback has not been run.
 
+**A run in agy (2026-09-21, agy 1.2.7)** on a small scratch project with an
+`index.html` containing known accessibility barriers and a GitHub remote with no
+issues. It saved `.nathan-skills/code-scan/full-2026-09-21.md` and a
+`.nathan-skills/.gitignore` containing `*`; `git status` showed only the ignored
+folder. The report carried the identity header, the scope line, a severity-ordered
+candidate list of 13 findings (each marked "no matching issue"), all three axes and
+a not-covered declaration per axis. It found the planted accessibility barriers.
+Not tested: a repository with authentication and a real dependency tree, a rescan
+on the same day, and any run in Claude Code or Codex.
+
 This is not QA, not a penetration test, not an accessibility certification, and
 not sign-off on anything.
 
@@ -174,6 +186,6 @@ not sign-off on anything.
 
 Outside the chain. It has no input artifact and no predecessor, and its output
 has two exits: `to-tickets` in the same session to track the findings as-is, or
-`grill-me` on the saved report in a new session when what to fix is still open.
+`nathan-grill-me` on the saved report in a new session when what to fix is still open.
 See [After the report](#after-the-report), and the [overview](./README.md) for
 the chain it is deliberately not part of.

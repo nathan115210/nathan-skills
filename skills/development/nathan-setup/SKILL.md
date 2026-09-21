@@ -31,7 +31,7 @@ A block might contain the following **only when confirmed by this project**:
 - Validation: run pnpm lint and pnpm test from the repository root.
 - Integration tests require the local test database described in README.md.
 - Treat existing test failures as baseline evidence; record their causes.
-- Use grill-me to clarify behavior and write a root topic PRD.
+- Use nathan-grill-me to clarify behavior and save a topic PRD under `.nathan-skills/prd/`.
 - Development gates are not yet installed; dependent workflows remain unavailable.
 ```
 

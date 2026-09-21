@@ -3,7 +3,7 @@
 [instructions/communication.md](../instructions/communication.md) is the only
 maintained source of response-style rules. They apply to ordinary conversations
 and every skill, including skills outside this repository. They do not need a
-skill invocation. `grill-me` owns its interview and PRD requirements, not a
+skill invocation. `nathan-grill-me` owns its interview and PRD requirements, not a
 second copy of the communication rules.
 
 ## Install and remove
@@ -46,7 +46,7 @@ After moving, old links require inspection; the new clone cannot adopt them.
 
 A fresh ordinary conversation gives an actionable answer without invoking a
 skill. During ongoing work it makes the current state visible without replaying
-history. A `grill-me` interview still asks one product decision at a time and
+history. A `nathan-grill-me` interview still asks one product decision at a time and
 keeps the PRD complete. Concise presentation must not discard required findings
 or replace the skill's completion conditions.
 

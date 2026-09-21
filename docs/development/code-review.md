@@ -65,7 +65,20 @@ separate user requests.
 Static review does not establish runtime correctness or replace QA. The skill
 cannot guarantee identical isolation or tool restrictions across providers.
 Codex runtime review was not completed because the test account reached its
-usage limit. Claude Code and agy runtime behaviour also remains untested.
+usage limit. Claude Code runtime behaviour also remains untested.
+
+**A run in agy (2026-09-21, agy 1.2.7)** on uncommitted changes in a task
+worktree, with the ticket's spec issue as input. `/code-review` was the only
+command of that name in agy's list. It resolved the revision, named the spec
+source (issue #2), ran Standards and Spec as independent subagents, and reported
+Standards, Spec and Accessibility separately, with Accessibility marked not
+assessed because no UI file changed. It wrote nothing. **It missed a real
+problem:** the change also implemented behaviour that belonged to a sibling
+ticket, and the Spec axis called it fully compliant. Part of the cause was
+upstream: the ticket's acceptance criterion had been paraphrased at the CLI level
+while its test name was at the function level, so the extra code looked required.
+Not tested: whether the Spec axis flags such an addition once the ticket carries
+the concrete criterion and its observable, and any run in Claude Code.
 
 ## Where it fits
 
