@@ -48,7 +48,7 @@ Rejects an order whose total is negative
 → it('rejects order with negative total')
 ```
 
-**Transcribe only.** Every criterion and every test name here is copied from the spec, unchanged. On the scan path there is nothing to transcribe — see the scan-path statement below. If no test name in the spec covers this slice, write exactly:
+**Transcribe only.** Every criterion and every test name here is copied from the spec, unchanged — character for character, including any formatting on the test-name line and any indented precondition/expected-result line under it. On the scan path there is nothing to transcribe — see the scan-path statement below. If no test name in the spec covers this slice, write exactly:
 
 > No test name in the spec covers this slice. Not buildable — the gap is in the spec, not in this ticket.
 
@@ -58,7 +58,7 @@ That sentence is canonical here. Other steps point at this file for its wording 
 document that does not exist. Write exactly this instead, on every ticket in the
 batch:
 
-> No spec covers this finding, so it has no acceptance criteria or test names. Not buildable — `grill-me` then `to-spec` on this issue is what makes it buildable.
+> No spec covers this finding, so it has no acceptance criteria or test names. Not buildable — `nathan-grill-me` then `to-spec` on this issue is what makes it buildable.
 
 This sentence is canonical for the same reason, and the two are never mixed: the
 first says a spec left a gap, the second says no spec was ever written.
@@ -93,6 +93,7 @@ today.
 
 Rejects an order whose total is negative
 → it('rejects order with negative total')
+  Given an order with total -1, it is rejected with the reason "negative total"; observed in the submit response.
 
 Rejects an order whose total exceeds the account limit
 → it('rejects order above account limit')
@@ -136,7 +137,7 @@ one that differs in its first.
 
 ## Acceptance criteria and test names
 
-No spec covers this finding, so it has no acceptance criteria or test names. Not buildable — `grill-me` then `to-spec` on this issue is what makes it buildable.
+No spec covers this finding, so it has no acceptance criteria or test names. Not buildable — `nathan-grill-me` then `to-spec` on this issue is what makes it buildable.
 
 ## Notes
 
@@ -151,7 +152,7 @@ Before publication, every preview and final issue body must satisfy all of these
 
 - `## What to build` appears once and contains the observable end-to-end result.
 - `## Acceptance criteria and test names` appears once and contains only exact
-  criterion/test-name pairs from the spec, or one of the two exact not-buildable
+  criterion/test-name pairs from the spec, with any detail lines under them, or one of the two exact not-buildable
   statements — the spec-gap one, or the scan-path one.
 - `## Notes`, when present, comes last and contains only load-bearing context.
 - No template instructions, placeholder text, parent prose, blocker prose,
