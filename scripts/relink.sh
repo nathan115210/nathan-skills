@@ -4,16 +4,9 @@
 # Idempotent: safe to run repeatedly. Never deletes anything it did not create.
 set -uo pipefail
 
-# The repository root is the parent of this script directory.
-CENTRAL="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-
-# One entry per managed tool. agy (Antigravity CLI) reads ~/.gemini/config/,
-# not ~/.gemini/ — linking into ~/.gemini/skills leaves the skill invisible.
-TOOL_DIRS=(
-  "$HOME/.claude/skills"         # Claude Code
-  "$HOME/.codex/skills"          # Codex
-  "$HOME/.gemini/config/skills"  # agy (Antigravity CLI)
-)
+LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib/links.sh"
+[ -r "$LIB" ] || { echo "ERROR: missing helper library: $LIB" >&2; exit 1; }
+. "$LIB"
 
 linked=0
 skipped=0
@@ -40,30 +33,6 @@ raw_target_abs() {
     /*) printf '%s\n' "$dest" ;;
     *) printf '%s\n' "$(cd "$(dirname "$link")" 2>/dev/null && pwd -P)/$dest" ;;
   esac
-}
-
-# Does this symlink belong to this clone? Existing targets are resolved
-# physically; a dangling target must be a literal path inside this clone with no
-# traversal and no symlinked ancestor. Kept identical to unlink.sh's owned().
-owned() {
-  local link="$1" dest resolved part
-  dest="$(readlink "$link")" || return 1
-  case "$dest" in
-    /*) ;;
-    *) dest="$(cd "$(dirname "$link")" && pwd -P)/$dest" ;;
-  esac
-  if resolved="$(cd "$dest" 2>/dev/null && pwd -P)"; then
-    case "$resolved" in "$CENTRAL"/*) return 0 ;; *) return 1 ;; esac
-  fi
-  [ ! -e "$dest" ] || return 1
-  case "$dest" in "$CENTRAL"/*) ;; *) return 1 ;; esac
-  case "$dest" in */../*|*/..|*/./*|*/.|*//*) return 1 ;; esac
-  part="$dest"
-  while [ "$part" != "$CENTRAL" ]; do
-    [ ! -L "$part" ] || return 1
-    part="$(dirname "$part")"
-  done
-  return 0
 }
 
 # Discover skill roots recursively, without linking category/resource folders.

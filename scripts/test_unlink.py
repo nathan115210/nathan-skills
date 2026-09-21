@@ -16,12 +16,19 @@ class UnlinkTests(unittest.TestCase):
         self.base = Path(self.tmp.name).resolve()
         self.repo = self.base / 'clone with spaces'
         self.home = self.base / 'home'
-        (self.repo / 'scripts').mkdir(parents=True)
+        (self.repo / 'scripts/lib').mkdir(parents=True)
         for script in ('relink.sh', 'unlink.sh'):
             shutil.copy2(Path(__file__).with_name(script), self.repo / 'scripts' / script)
+        shutil.copy2(Path(__file__).parent / 'lib/links.sh', self.repo / 'scripts/lib/links.sh')
         self.skill = self.repo / 'skills/development/example'
         self.skill.mkdir(parents=True)
         (self.skill / 'SKILL.md').write_text('---\nname: example\n---\n')
+
+    def test_missing_lib_fails_with_error(self):
+        (self.repo / 'scripts/lib/links.sh').unlink()
+        result = self.run_script('unlink.sh')
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('scripts/lib/links.sh', result.stderr)
 
     def run_script(self, script='unlink.sh', *args):
         return subprocess.run(['bash', str(self.repo / 'scripts' / script), *args],

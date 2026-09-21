@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Remove only tool-directory symlinks whose targets belong to this clone.
 set -uo pipefail
-CENTRAL="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib/links.sh"
+[ -r "$LIB" ] || { echo "ERROR: missing helper library: $LIB" >&2; exit 1; }
+. "$LIB"
+
 dry_run=false
 case "${1:-}" in
   --dry-run) dry_run=true ;;
@@ -9,30 +12,6 @@ case "${1:-}" in
   *) echo "Usage: $0 [--dry-run]" >&2; exit 1 ;;
 esac
 [ "$#" -le 1 ] || { echo "Usage: $0 [--dry-run]" >&2; exit 1; }
-TOOL_DIRS=("$HOME/.claude/skills" "$HOME/.codex/skills" "$HOME/.gemini/config/skills")
-
-# Existing directory targets can be resolved physically. For dangling targets,
-# require a literal path inside this clone with no traversal or symlink ancestor.
-owned() {
-  local link="$1" dest resolved part
-  dest="$(readlink "$link")" || return 1
-  case "$dest" in
-    /*) ;;
-    *) dest="$(cd "$(dirname "$link")" && pwd -P)/$dest" ;;
-  esac
-  if resolved="$(cd "$dest" 2>/dev/null && pwd -P)"; then
-    case "$resolved" in "$CENTRAL"/*) return 0 ;; *) return 1 ;; esac
-  fi
-  [ ! -e "$dest" ] || return 1
-  case "$dest" in "$CENTRAL"/*) ;; *) return 1 ;; esac
-  case "$dest" in */../*|*/..|*/./*|*/.|*//*) return 1 ;; esac
-  part="$dest"
-  while [ "$part" != "$CENTRAL" ]; do
-    [ ! -L "$part" ] || return 1
-    part="$(dirname "$part")"
-  done
-  return 0
-}
 
 removed=0
 kept=0

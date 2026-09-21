@@ -11,6 +11,7 @@ skills/
   development/
     <skill-name>/SKILL.md   current development workflow skills
 scripts/
+  lib/links.sh             shared link-ownership and tool-directory definitions
   relink.sh                global skill-linking script
   unlink.sh                remove this clone’s global skill links
   check_changeset.py       guards the changeset rules, in CI and locally
@@ -24,7 +25,8 @@ CHANGELOG.md              generated release history — never edit by hand
 ```
 
 Skill-specific helpers stay inside their skill’s `scripts/` folder. Global scripts
-live in the root `scripts/` folder. Categories organize the source repository;
+live in the root `scripts/` folder; code shared across global scripts lives in
+`scripts/lib/`. Categories organize the source repository;
 tool skill directories remain flat. Skill folder names must be globally unique.
 Keep skill names, shared instructions, inputs and outcomes consistent across
 Claude Code, Codex and agy. Provider-specific metadata/adapters must not fork
