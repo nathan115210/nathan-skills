@@ -111,9 +111,10 @@ relevant file paths/content, discovered criteria and tooling exclusions, and
   scope. Require the actual barrier, source location and correctly scoped criterion.
   No whole-codebase audit and no persona simulation on this axis.
 
-Ask for concise findings per axis, normally under 400 words, with explicit
-unassessed coverage. Verify reported locations and evidence before presenting;
-drop unsupported findings rather than manufacturing completeness.
+Ask for concise findings per axis — location, rule and consequence for each,
+no narrative — with explicit unassessed coverage. Verify reported locations and
+evidence before presenting; drop unsupported findings rather than manufacturing
+completeness.
 
 ## Report
 

@@ -45,14 +45,14 @@ Use this structure. Keep it tight — a review nobody finishes changes nothing.
 [One or two sentences: the artefact and the journey it covers.]
 
 ## The group view
-[Collective "we" voice, 4–7 sentences. Lead with the barrier that stops the most
+[Collective "we" voice, one short paragraph. Lead with the barrier that stops the most
 people. Name where the group splits, since designs usually break by trying to serve
 an average customer who doesn't exist.]
 
 ## Where it breaks for some of us
 
 ### [Name], [tagline] — [Blocker / Serious friction / Wears us down]
-[First person, 2–4 sentences, about THIS design. Concrete elements, concrete
+[First person, a few sentences, about THIS design. Concrete elements, concrete
 consequence. Their own voice, not a generic accessibility complaint.]
 **What would fix it:** [One or two specific changes.]
 
