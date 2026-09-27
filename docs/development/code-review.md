@@ -44,9 +44,10 @@ session model and does not require a separately installed Claude agent type.
 
 **Does it enforce read-only access?**
 The instructions prohibit mutations. A platform sandbox can enforce restrictions,
-but a Markdown file cannot supply that guarantee. No global agent or hook is
-installed. The supplied command-guard prototype is retained as an inert reference
-because it admits known writing commands; do not use it as protection.
+but a Markdown file cannot supply that guarantee. The skill ships no hook and
+no command guard; read-only must be enforced outside the model. A command
+allowlist is not that guarantee: such filters miss write operands and fail
+open on unknown payloads.
 
 **Will it post findings on GitHub or fix them?**
 No. Reports remain in the conversation. Publication and implementation require
