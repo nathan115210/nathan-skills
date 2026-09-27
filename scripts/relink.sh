@@ -170,27 +170,22 @@ for src in "${skill_sources[@]-}"; do
           continue
         fi
       else
-        # Dangling link: fall back to the raw (unresolved) target path,
-        # since we can't cd into something that no longer exists. Only
-        # links dangling *inside this repo* (e.g. a renamed/removed skill)
-        # are ours to clean up; a dangling link into someone else's path
-        # is still protected.
-        raw="$(raw_target_abs "$target")"
-        case "$raw" in
-          "$CENTRAL"/*)
-            case "$raw" in */../*|*/..|*/./*)
-              echo "  SKIP  $target -> ambiguous dangling target ($raw)"
-              skipped=$((skipped + 1))
-              continue
+        # Dangling link (or one to something we can't cd into): owned()
+        # decides, the same rule prune and unlink.sh use. The raw
+        # (unresolved) target path only chooses which message to print.
+        if ! owned "$target"; then
+          raw="$(raw_target_abs "$target")"
+          case "$raw" in
+            "$CENTRAL"/*)
+              echo "  SKIP  $target -> dangling target not provably owned by this clone ($raw)"
               ;;
-            esac
-            ;;
-          *)
-            echo "  SKIP  $target -> dangling symlink points outside this repo ($raw)"
-            skipped=$((skipped + 1))
-            continue
-            ;;
-        esac
+            *)
+              echo "  SKIP  $target -> dangling symlink points outside this repo ($raw)"
+              ;;
+          esac
+          skipped=$((skipped + 1))
+          continue
+        fi
       fi
       rm -f "$target"
     elif [ -e "$target" ]; then

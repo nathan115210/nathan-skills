@@ -67,6 +67,11 @@ rm ~/.claude/skills/<name> ~/.codex/skills/<name> ~/.gemini/config/skills/<name>
 ./scripts/relink.sh
 ```
 
+A `SKIP` reading `dangling target not provably owned by this clone` points into
+this clone, but through a path the script will not trust (traversal, `//`, a
+symlinked folder, or a file rather than a skill folder). Inspect it with
+`readlink`, delete it by hand if it is yours, and rerun.
+
 Never make the script overwrite a target instead. It refuses by design, and that
 refusal is the only thing standing between a rerun and someone else's work.
 

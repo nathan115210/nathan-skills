@@ -117,10 +117,44 @@ class RelinkTests(unittest.TestCase):
         targets[0].mkdir()
         targets[1].symlink_to(foreign)
         targets[2].symlink_to(self.base / 'foreign-missing')
-        self.assertNotEqual(self.run_relink().returncode, 0)
+        result = self.run_relink()
+        self.assertNotEqual(result.returncode, 0)
         self.assertFalse(targets[0].is_symlink())
         self.assertEqual(targets[1].resolve(), foreign)
         self.assertEqual(os.readlink(targets[2]), str(self.base / 'foreign-missing'))
+        self.assertIn(f'{targets[2]} -> dangling symlink points outside this repo', result.stdout)
+
+    def assert_relink_keeps_unowned_link(self, dest):
+        """Every tool folder's `example` link to `dest` survives relink unchanged."""
+        for folder in ROOTS:
+            root = self.home / folder
+            root.mkdir(parents=True, exist_ok=True)
+            (root / 'example').symlink_to(dest)
+        result = self.run_relink()
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('not provably owned by this clone', result.stdout)
+        for folder in ROOTS:
+            target = self.home / folder / 'example'
+            self.assertTrue(target.is_symlink())
+            self.assertEqual(os.readlink(target), str(dest))
+            target.unlink()
+
+    def test_relink_keeps_dangling_link_with_dot_dot_traversal_into_the_clone(self):
+        self.assert_relink_keeps_unowned_link(f'{self.repo}/skills/../gone')
+
+    def test_relink_keeps_dangling_link_with_double_slash_or_trailing_dot(self):
+        for dest in (f'{self.repo}/skills//gone', f'{self.repo}/skills/gone/.'):
+            with self.subTest(dest=dest):
+                self.assert_relink_keeps_unowned_link(dest)
+
+    def test_relink_keeps_dangling_link_under_a_symlinked_ancestor_in_the_clone(self):
+        outside = self.base / 'outside'
+        outside.mkdir()
+        (self.repo / 'skills/alias').symlink_to(outside)
+        self.assert_relink_keeps_unowned_link(f'{self.repo}/skills/alias/gone')
+
+    def test_relink_keeps_link_to_a_regular_file_inside_the_clone(self):
+        self.assert_relink_keeps_unowned_link(self.skill / 'SKILL.md')
 
     def test_duplicate_names_fail_before_any_links(self):
         self.add_skill('other/example')
