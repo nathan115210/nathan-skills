@@ -17,6 +17,9 @@ backlog gets put into one order with the new tickets inserted into it.
 It writes no files. The only exit is issues — and, when the spec issue is on a
 GitHub Project, the same board the spec issue is on, in an order you approved.
 
+When the cut comes out as **one slice**, it creates nothing: the spec issue
+itself is the ticket. See [When the breakdown is one ticket](#when-the-breakdown-is-one-ticket).
+
 ## When to reach for it
 
 You type it. It will not fire on its own.
@@ -98,6 +101,27 @@ placement with the approved plan, matching issues to plan entries by the number
 captured at creation rather than by title. A mismatch gets one repair and another
 read-back; a remaining mismatch is reported as a partial publish.
 
+## When the breakdown is one ticket
+
+The count of slices is only known after the code has been read and the work cut,
+so `to-spec` never judges it and this skill does. When the cut yields exactly
+one slice, a sub-issue would repeat the spec's criteria and test names word for
+word — a second record of the same test names. So it creates none:
+
+- The preview says one slice, no sub-issue, the spec issue itself is the ticket,
+  and shows the complete board order with the spec issue placed in it. One
+  approval covers both.
+- The only write is the spec issue's position on its board. No issue, no
+  relation, and no edit to the spec issue's title or body. If the spec issue is
+  on no board, or the token lacks the `project` scope, nothing is written at all.
+- The read-back confirms the spec issue still has no sub-issues and that its
+  title and body `diff` clean against copies saved before approval.
+- The hand-off is `dev` on the spec issue. A spec with no test names cannot be
+  marked in its own body, so the report and hand-off say it is not buildable and
+  name `nathan-grill-me` then `to-spec` instead.
+
+Two or more slices run exactly as described on the rest of this page.
+
 ## What the tickets deliberately do not contain
 
 - **No "Parent" section and no "Blocked by" section.** Both relations are
@@ -139,6 +163,13 @@ produced it**, once you have said which findings count. It:
 
 Everything else — exploring the codebase, the approval gate, publication, the
 `diff` read-back — is the same run as the spec path.
+
+**One confirmed finding gets no tracking parent.** A container holding a single
+child is an issue nobody needs, so the skill counts the findings before creating
+anything. With exactly one, it creates one issue whose body carries the scan's
+provenance (header, scope line, not-covered declarations, report path), then the
+finding, then the not-buildable statement. The board question is asked about
+that issue. Two or more findings run as described above.
 
 **Nothing published this way is buildable, and that is not a defect.** These
 tickets record what was found and where it sits in the queue. To start one, run
@@ -321,7 +352,10 @@ ticket marked not buildable.
 - On the scan path: one parent holding the report's header and gaps but no
   findings, one child per finding you named and no others, every child marked
   not buildable, and severity order preserved except where a blocker forced a
-  move.
+  move. With one finding: one issue, no parent, the provenance above the finding.
+- On a one-slice spec: the preview calls the spec issue the ticket, the issue
+  count does not change, the spec issue has no sub-issues, and its title and body
+  are untouched; only its board position moves.
 - The preview shows the complete post-insert order of every open issue on that
   board, not just where the new tickets landed, and names any existing issue it
   wants to move and the edge that moves it.
@@ -482,6 +516,12 @@ The rest of this section is design, not evidence.
   failure modes now live in `references/github-procedures.md`, and `SKILL.md` keeps
   the decisions and approvals (about 27% fewer words, 7,008 to 5,098). The runs described on this page
   used the earlier, longer text; the trimmed skill has not been run in any tool.
+- **The one-slice and one-finding branches are unverified in every tool.**
+  Added for issue #75; its seven runtime scenarios, AC1–AC7 (one-slice with and
+  without a board, without test names, the single-finding scan, and the two
+  multi-ticket regressions), have not been run in agy, and Claude Code and Codex
+  are untested. AC8 is the repository's docs test, not a runtime scenario. The missing-`project`-scope case of the one-slice branch has no
+  test scenario at all.
 - The template has **no canonical wording for a ticket that records an open
   question** — one that is neither a spec gap nor a scan finding. Issues #35-#38
   in this repository were published with an invented third sentence, which is

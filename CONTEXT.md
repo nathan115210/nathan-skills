@@ -20,7 +20,7 @@ current implementation status.
 | Issue | A GitHub work item. A spec issue can later have sub-issues; it is not declared a parent merely because it contains a spec. |
 | Task worktree | The Git checkout assigned to one implementation ticket; it has its own working tree and index but shares refs and is not a sandbox. |
 | Seam | A boundary at which a test can observe behaviour. `to-spec` proposes the seams for the whole spec and obtains the user's confirmation. |
-| Ticket | One sub-issue produced by `to-tickets`: a vertical slice of a spec, carrying the spec's test names for that slice. Tickets are disposable; the spec is not. |
+| Ticket | One sub-issue produced by `to-tickets`: a vertical slice of a spec, carrying the spec's test names for that slice. When the cut yields one slice, the spec issue itself is the ticket and no sub-issue exists. Tickets are disposable; the spec is not. |
 | Backlog order | The manual item position of open issues on a GitHub Project — the order work is picked up in, top-down. `to-tickets` proposes it and writes it; no label or field restates it. |
 | Codebase scan | A standing-health review of a whole codebase along separate architecture, security and accessibility axes. Occasional and manual; it is not a step of the development workflow and nothing waits on it. |
 | Blocking relation | A GitHub issue dependency stating that one ticket gates another. Native, queryable state — not prose in an issue body. |

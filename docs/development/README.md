@@ -209,7 +209,7 @@ nathan-setup ─── once per project, before anything else
    to-spec ──────────────► one spec issue  (+ the test seams, chosen once)
       │
       ▼
-  to-tickets ──────► sub-issues + blocking relations
+  to-tickets ──────► sub-issues + blocking relations (none for one slice)
       │
       ▼
      dev ────────────► a task worktree + verification status
@@ -222,7 +222,7 @@ nathan-setup ─── once per project, before anything else
 | Connect a project | [`nathan-setup`](./nathan-setup.md) | Project rules all three tools read | ✅ |
 | Decide what to build | [`nathan-grill-me`](./nathan-grill-me.md) | A topic PRD in `.nathan-skills/prd/` | ✅ |
 | Write it down once | [`to-spec`](./to-spec.md) | One spec issue, and the test seams | ✅ |
-| Split it | [`to-tickets`](./to-tickets.md) | Sub-issues and blocking relations | ✅ |
+| Split it | [`to-tickets`](./to-tickets.md) | Sub-issues and blocking relations, or the spec issue itself when it is one slice | ✅ |
 | Build it | [`dev`](./dev.md) | A task worktree and verification status | ✅ |
 | Review it | [`code-review`](./code-review.md) | Separate Standards, Spec and optional Accessibility findings | ✅ |
 
@@ -395,7 +395,8 @@ Unlike `accessibility-review`, it has a second exit, and it is the short one.
 When the findings themselves are not in dispute and you only want them on the
 board, `to-tickets` takes the confirmed list **in the same session** — one
 tracking parent for the scan, one child per finding, every child marked not
-buildable, ordered by the scan's severity. That writes down what was found
+buildable, ordered by the scan's severity. A single confirmed finding becomes
+one issue carrying the scan's provenance, with no tracking parent. That writes down what was found
 without an interview, and leaves what to do about it open.
 
 It still enters at `nathan-grill-me` when the open question is *which* findings are

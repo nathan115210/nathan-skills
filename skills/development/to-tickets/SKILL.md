@@ -1,13 +1,13 @@
 ---
 name: to-tickets
-description: Split one spec issue into sub-issues carrying native blocking relations — read the spec, cut tracer-bullet slices, allocate its test names, get the breakdown and the resulting backlog order confirmed, then publish to GitHub and write that order back to the Project. Also accepts a codebase-scan findings list confirmed in the same session, publishing it under a tracking parent as not-buildable tickets. No requirements interview, no seam choice, no code.
+description: Split one spec issue into sub-issues carrying native blocking relations — read the spec, cut tracer-bullet slices, allocate its test names, get the breakdown and the resulting backlog order confirmed, then publish to GitHub and write that order back to the Project. When the cut is one slice, creates no sub-issue — the spec issue is the ticket, and only its board position is written. Also accepts a codebase-scan findings list confirmed in the same session, publishing it as not-buildable tickets under a tracking parent, or as one issue with no parent when one finding is confirmed. No requirements interview, no seam choice, no code.
 disable-model-invocation: true
 disallowed-tools: Write, Edit, NotebookEdit
 ---
 
 # To Tickets
 
-You are the only splitter in this workflow. One spec issue goes in; its sub-issues and their blocking relations come out.
+You are the only splitter in this workflow. One spec issue goes in; its sub-issues and their blocking relations come out — unless the cut yields one slice, in which case nothing is created and the spec issue itself is the ticket.
 
 Four things happen here and nowhere else:
 
@@ -53,7 +53,7 @@ Four things differ from the spec path. Nothing else does:
 
 | | Spec path | Scan path |
 | --- | --- | --- |
-| The parent | The spec issue, already in the tracker | A tracking issue you create in step 0 |
+| The parent | The spec issue, already in the tracker | A tracking issue you create in step 0 — or none, when exactly one finding is confirmed |
 | Step 1's gate | The body must carry Seams and Acceptance Criteria | Skipped — there is no spec to check |
 | Cutting, step 3 | Slices cut from the spec | One finding, one ticket. Never merged, never subdivided |
 | Test names, step 4 | Allocated from the spec | None exist; every ticket carries the not-buildable statement |
@@ -127,8 +127,20 @@ Before doing the work, confirm three things (commands in the procedures file):
   Carry the gap into step 5 so the user approves knowing the issues will be neither
   placed nor ordered.
 
-**On the scan path, create the tracking parent now** — after the writable check,
-before anything else. It is one issue, and its body is the scan's own record:
+**On the scan path, count the confirmed findings first.** The count decides
+whether a tracking parent exists at all, so nothing is created before it is known.
+
+**Exactly one confirmed finding: create no tracking parent**, now or later. A
+container holding one child is an issue nobody needs. The finding becomes a single
+issue whose body carries the scan's provenance ahead of the finding, in the form
+`references/ticket-template.md` gives; it is rendered and approved in step 5 and
+created in step 6 like any ticket. It has no parent and no children, so the
+no-sub-issues check below does not apply to it. Treat "the parent" below as absent
+on this branch, except where a step says otherwise.
+
+**Two or more confirmed findings: create the tracking parent now** — after the
+writable check, before anything else. It is one issue, and its body is the scan's
+own record:
 
 - **Title** — `Codebase scan: <project> @ <short revision>`.
 - **Body** — the report's identity header, its scope line and its per-axis
@@ -170,6 +182,9 @@ A tracking issue created moments ago is on no board, so there is nothing to
 inherit, and inheriting nothing would put a whole scan's worth of tickets where
 the user does not look. Ask which Project the tracking parent joins, or none,
 place the parent there, and from that point the rule above applies unchanged.
+With exactly one confirmed finding there is no parent, so ask the same one
+question about the single issue instead: record the answer now, and place the
+issue there in step 6 once it exists.
 
 **A spec with no test names is still worth splitting, and splitting it does not make it buildable.** Cut the slices, then say so per ticket in step 4. Do not stop, and do not fill the gap — `to-spec` deliberately left it visible.
 
@@ -182,6 +197,12 @@ Find the current state of the area, the vocabulary already in use, and any conve
 Look for **prefactoring** — a change that makes the real change easy. Make the change easy, then make the easy change. A prefactor is its own ticket, and it blocks the slices that need it.
 
 ### 3. Cut vertical slices
+
+**Count the slices once the cut is made.** When the spec path yields exactly one
+slice, the spec issue itself is the ticket: a sub-issue would restate its criteria
+and test names word for word, the second record this workflow exists to avoid. Go
+on to step 4 to confirm the allocation, and follow **The one-slice case** in steps
+5 to 9. Two or more slices follow the steps as written.
 
 **On the scan path there is no cutting.** One finding is one ticket, in the
 scan's own words and at the location it named. Do not merge two findings that
@@ -224,6 +245,12 @@ A spec criterion may carry several test names, and they may not all land on the 
 **Do not invent a test name to close any of these gaps**, and do not soften the not-buildable line. Whoever picks the ticket up needs to know the gap exists before they start.
 
 The spec's **Combined Behavior** list stays on the parent. It is not allocated, not copied, and not split.
+
+**One slice:** every test name belongs to the spec issue itself, where it already
+stands, so nothing is transcribed and nothing is written. If the spec has no test
+names, the not-buildable line cannot go into its body either — the parent is never
+edited. Say instead, in step 8's report and step 9's hand-off, that the spec issue
+is not buildable and needs `nathan-grill-me` then `to-spec` first.
 
 ### 5. Get the breakdown confirmed
 
@@ -308,7 +335,32 @@ bodies, blocking edges and order are the publish plan.
 **Publish nothing before that.** Do not replace the full preview with a summary:
 the body the user approves must be the body GitHub receives.
 
+#### The one-slice case
+
+There is no ticket body to render and no scratch ticket file. The preview says, in
+one statement: **one slice, no sub-issue — the spec issue itself is the ticket**,
+by number and title. Then show the order exactly as above — the complete board,
+with the spec issue placed by technical risk and dependency under the same rules —
+and the one-line note on what the order ranks by. Only the spec issue moves. If no
+position for it keeps every blocker above what it blocks without moving an existing
+issue, name that conflict in the preview instead of proposing the move. One approval covers both. Ask whether one slice is right and whether the
+order is right.
+
+The only write this case can make is the spec issue's board position. If the spec
+issue is on no board, or the token lacks the `project` scope, say that no order
+will be written and that nothing at all will be written; the approval is then of
+the one-slice statement alone. Before the user approves, save the spec issue's
+title and body to scratch files under `$TMPDIR`, so step 8 can show by `diff` that
+neither changed.
+
 ### 6. Publish, in dependency order
+
+**One slice: create nothing.** No issue, no sub-issue relation, no blocking edge,
+no placement, no edit to the spec issue. Go to step 7.
+
+**One confirmed finding:** create the single issue from its scratch file as in
+item 1 below, capture its `number` and `id`, and place it on the Project named in
+step 1, if any. It is attached to no parent and has no blocking edges.
 
 Blockers first, so every edge can name an issue that already exists. For each ticket:
 
@@ -350,6 +402,10 @@ it, so a failure halfway leaves a correctly ordered head. Back off on `403` or `
 as in step 6. Say once in the report that position belongs to the project, and a view
 with its own sort will not show it until the sort is cleared.
 
+**One slice:** the same re-read and the same stop rules apply, but write only the
+spec issue's position — one move, directly after the item the approved order puts
+above it. No other item is written.
+
 ### 8. Read the issues and graph back, and compare them to what was approved
 
 Read the parent's sub-issues back, paging past every `hasNextPage`, and compare them to
@@ -380,6 +436,18 @@ order was written, say which existing issues moved. Report a partial publish as
 partial — a breakdown that is half-linked is worse than one that is not linked at all,
 because it looks finished.
 
+**One slice:** there are no sub-issues to match. Read back instead: the spec
+issue's sub-issue count is `0`; its title and body, `diff`ed against the scratch
+files saved in step 5, are unchanged; and the board order, compared position by
+position with the approved order, when one was written. Report that no issue was
+created, that the spec issue is the ticket, and its final position — or that no
+order was written and why. If the spec has no test names, report it as not
+buildable (step 4).
+
+**One confirmed finding:** read the single issue back — its body `diff`ed against
+its scratch file, no parent and no sub-issues, its Project membership, and the
+board order position by position.
+
 Delete the scratch files once the comparison is done. They are transport; leaving
 them behind creates the second record this skill exists to avoid.
 
@@ -391,9 +459,13 @@ the first buildable ticket on it. A ticket marked not buildable needs `nathan-gr
 On the scan path that covers every ticket published, so say it once about the
 batch: these are tracked and ordered, none is buildable, and the top one becomes
 buildable by running `nathan-grill-me` on it in a new session and then `to-spec` back
-into that same issue.
+into that same issue. With one confirmed finding, say the same about that one issue.
 
-Then print one ready-to-paste line, with the numbers you just created filled in, for assigning the batch to a milestone:
+**One slice:** say to run `dev` on #N, the spec issue itself. If the spec carries
+no test names, say instead that it is not buildable and needs `nathan-grill-me` then
+`to-spec` first; nothing is split to hand to `dev`.
+
+Then print one ready-to-paste line, with the numbers you just created filled in — in the one-slice case, the spec issue's number only — for assigning the batch to a milestone:
 
 ```
 gh issue edit <every created number> --milestone "<name>"
@@ -406,12 +478,13 @@ Do not invoke anything. Skills in this workflow are not chained inside one sessi
 ## Verification
 
 - Exactly one input was named at the start — a spec issue, or a `codebase-scan` findings list confirmed in this same session — not reconstructed at the end.
-- The tracker was confirmed writable, and the parent confirmed to have no sub-issues, before any work was done. The parent's comments were read, not only its body.
+- The tracker was confirmed writable, and the parent confirmed to have no sub-issues, before any work was done — except for a single-finding scan issue, which has no parent to check. The parent's comments were read, not only its body.
 - On the spec path, the input was confirmed to be a `to-spec` spec, and the seams were quoted from it; none were added, moved or re-chosen. On the scan path, the absence of a spec, of seams and of test names was stated before any ticket was cut.
-- On the scan path, the tracking parent was created from the report's own header, scope line and not-covered declarations, carried no findings in its body, and was approved before creation; every child is exactly one finding, unmerged and unsubdivided, and carries the not-buildable statement.
+- On the scan path, the confirmed findings were counted before anything was created. With two or more, the tracking parent was created from the report's own header, scope line and not-covered declarations, carried no findings in its body, and was approved before creation; every child is exactly one finding, unmerged and unsubdivided, and carries the not-buildable statement. With exactly one, no tracking parent exists: one issue carries the provenance, then the finding, then the not-buildable statement, with no parent and no sub-issues.
+- With one slice on the spec path, no issue was created and no relation written; the preview said the spec issue is the ticket and showed the complete board order; the only write was the spec issue's position; its sub-issue count read back as `0`, and its title and body `diff`ed clean against the copies saved before approval.
 - The codebase was explored before the slices were cut. Every slice is vertical, verifiable on its own, and observable at a seam the spec chose — or is an explicitly sequenced expand–contract step. Every ticket title is distinct.
-- Every test name in the spec landed on exactly one ticket, as written. None were invented, none were silently dropped, and any that fitted no slice were reported. Every ticket without a test name carries the not-buildable line. The Combined Behavior list stayed on the parent.
-- The breakdown was approved by the user before anything was published. The approval included each ticket's complete rendered body, and the destination Project (inherited from the parent, not chosen; on the scan path, the one board question was about the tracking parent).
+- Every test name in the spec landed on exactly one ticket, as written. None were invented, none were silently dropped, and any that fitted no slice were reported. Every ticket without a test name carries the not-buildable line, except a one-slice spec issue, whose body is never edited; it was reported not buildable in steps 8 and 9 instead. The Combined Behavior list stayed on the parent.
+- The breakdown was approved by the user before anything was published. The approval included each ticket's complete rendered body — in the one-slice case, the one-slice statement instead, since there is no body to render — and the destination Project (inherited from the parent, not chosen; on the scan path, the one board question was about the tracking parent, or about the single issue when one finding was confirmed).
 - The whole board was read in `POSITION` order, paged to the end, before the order was proposed. The preview showed the complete post-insert order, and named every existing issue that moved and the edge that moved it. The user approved that order in the same approval as the bodies; no second gate was added.
 - Every issue was created from its scratch file, not a retyped body, and every published body was compared to its file with `diff`. Published issues were matched to plan entries by captured `number`, and the read-back paged past `first:` wherever `hasNextPage` was true.
 - Both relations were written by `id`. The graph was read back and compared node by node, and no blocker belongs to another repository. Any repair was read back once more.
