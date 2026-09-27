@@ -29,6 +29,7 @@ jobs:
       - name: Check changesets
         env:
           LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           args=()
           if echo "$LABELS" | grep -q '"allow-major"'; then
@@ -38,4 +39,4 @@ jobs:
             args+=(--skip-present)
           fi
           python3 scripts/check_changeset.py \
-            --base "origin/${{ github.event.pull_request.base.ref }}" "${args[@]}"
+            --base "origin/$BASE_REF" "${args[@]}"
