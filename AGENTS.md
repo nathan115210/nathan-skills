@@ -156,10 +156,22 @@ label the guard rejects it. At the same time the pre-1.0 notice at the top of
 2. Update `name:` in the moved skill’s `SKILL.md` to match
 3. Move `docs/<category>/old-name.md` to the new name and update references in
    the docs, category overview, and repository README where present
-4. `./scripts/relink.sh` — it links the new name and prunes the stale `old-name`
+4. `grep -rn "old-name" skills/` — update every reference found in another
+   skill's `SKILL.md` or `references/` files. Name the other skill and locate
+   its file through the skill catalogue, never by a relative path;
+   `scripts/test_cross_skill_references.py` fails on a path into another skill
+5. `./scripts/relink.sh` — it links the new name and prunes the stale `old-name`
    link from all three tool folders in the same run
-5. `npm run changeset` — a rename breaks existing setups, so it is **minor**
+6. `npm run changeset` — a rename breaks existing setups, so it is **minor**
    before 1.0 and `major` after; say both the old and the new name
+
+## Removing a skill
+
+Other skills can depend on the one you remove. Run the search from step 4 of
+"Renaming a skill", `grep -rn "skill-name" skills/`, and update or remove every
+reference found in another skill's `SKILL.md` or `references/` files. The rest
+follows the rules above: remove its docs page, run `./scripts/relink.sh`, and add
+a **minor** changeset.
 
 ## Do not touch
 

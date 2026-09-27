@@ -15,11 +15,11 @@ development workflow requires it, and passing it is not a gate on anything.
 `code-review` reviews one change; `dev` verifies one ticket; this reviews the
 repository.
 
-Read [reviewer discipline](../code-review/references/reviewer.md) before
-scanning — this run is an **audit** in its terms, not a diff review, so existing
-problems are the point regardless of when they arrived. Locate that file through
-the runtime's skill catalogue, the sibling skill in this source tree, or the
-project's configured skill locations. If it is unavailable, say so in the report
+Read reviewer discipline (`reviewer.md`, in the `code-review` skill's references
+folder) before scanning — this run is an **audit** in its terms, not a diff
+review, so existing problems are the point regardless of when they arrived.
+Locate that file through the runtime's skill catalogue, the sibling skill in this
+source tree, or the project's configured skill locations. If it is unavailable, say so in the report
 rather than substituting a remembered version of it.
 
 ## Authority and boundaries
