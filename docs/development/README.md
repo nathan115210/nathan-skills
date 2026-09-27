@@ -368,8 +368,8 @@ for each are the user's calls, and `to-spec` only transcribes calls already made
 ## Whole-codebase scan
 
 [codebase-scan](./codebase-scan.md) is **not a step of the chain above**. No
-piece of work passes through it, nothing waits on it, and nothing in `dev`,
-`code-review` or `to-tickets` refers to it. It is run by hand, occasionally,
+piece of work passes through it, nothing waits on it, and nothing in `dev` or
+`code-review` refers to it. It is run by hand, occasionally,
 against a codebase as a whole — "it has been a while, what state is this in?"
 
 It reviews three axes separately — architecture, security and accessibility —
