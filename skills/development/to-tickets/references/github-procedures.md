@@ -24,7 +24,9 @@ proposed breakdown in this conversation so the user can place it themselves, and
 plainly that nothing was published. An unpublished breakdown is a blocked step, not a
 reason to change medium.
 
-Check the parent has not already been split:
+Check the parent has not already been split — on the spec path, and on the scan
+path once the tracking parent exists. A single-finding scan issue has no parent, so
+there is nothing to check:
 
 ```
 gh api graphql -f query='
@@ -107,6 +109,19 @@ Then list the repository's open issues, to find the ones the board does not hold
 ```
 gh issue list --state open --limit 200 --json number,title
 ```
+
+## Step 5 — the one-slice case: save the spec issue's state
+
+Before approval, save the spec issue's title and body, so step 8 can show by
+`diff` that neither changed:
+
+```
+gh api repos/<owner>/<repo>/issues/<spec number> --jq '.title' > "$TMPDIR/to-tickets-spec-title.txt"
+gh api repos/<owner>/<repo>/issues/<spec number> --jq '.body' > "$TMPDIR/to-tickets-spec-body.md"
+```
+
+Both files carry the `--jq` trailing newline, and so will step 8's reads, so they
+compare cleanly without stripping it.
 
 ## Step 6 — publish
 
@@ -231,6 +246,11 @@ per item is another burst against the same secondary rate limit. A half-written 
 is recoverable — report where it stopped — but a retry loop against a rate limit is
 not progress.
 
+**One slice: one mutation.** Write only the spec issue's item, with `after` set to
+the item id directly above it in the approved order, or omitted if it goes to the
+top. Take both ids from the re-read, not the preview. Do not sweep the rest of the
+board.
+
 Position is a property of the **project**, not of a view. A view with its own sort
 applied displays that sort instead, and the order written here will not be visible in
 it until the sort is cleared.
@@ -276,6 +296,25 @@ against the child rather than the parent. Do not trust `item-add`'s own output: 
 reports the item it created, not the set of items on the board. Read the whole board
 back with the paged `POSITION` query and compare position by position. Do not trust the
 mutation responses: each reports its own item, and the order is a property of the list.
+
+**One slice.** There are no children to read. Confirm the spec issue still has
+none (the step 0 `subIssues.totalCount` query returns `0`), and that its title and
+body are unchanged:
+
+```
+gh api repos/<owner>/<repo>/issues/<spec number> --jq '.title' | diff - "$TMPDIR/to-tickets-spec-title.txt"
+gh api repos/<owner>/<repo>/issues/<spec number> --jq '.body' | diff - "$TMPDIR/to-tickets-spec-body.md"
+```
+
+Both `diff`s must be empty. Then read the board back with the paged `POSITION` query
+and compare it position by position with the approved order. If the spec issue's
+title or body did change, this skill did not write it: report the difference, and do
+not restore it.
+
+**One confirmed finding.** Read the single issue back by the `number` captured in step
+6: `diff` its body against its scratch file as above, confirm it has no parent (the
+REST `issues/<number>/parent` endpoint returns `404`) and no sub-issues, read its
+Project membership with the step 1 query, and compare the board position by position.
 
 If a created issue's title or body differs, update it from the scratch file
 (`gh issue edit <number> --body-file …`) and diff it again. If a relation differs,

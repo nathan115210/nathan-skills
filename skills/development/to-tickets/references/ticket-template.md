@@ -26,6 +26,9 @@ nothing between the sections, and no heading not listed here:
 <load-bearing context; omit this heading entirely when there is none>
 ```
 
+**One exception to "nothing above `## What to build`":** the scan path's
+single-finding issue, below, which opens with the scan's provenance.
+
 **Everything outside that block is instruction to you, not content for the
 issue.** The headings below explain the three sections; they are not part of
 them. If a heading of this file ever reaches an issue body, the render was
@@ -146,10 +149,44 @@ Found by `codebase-scan` on the security axis, severity Major, at revision
 suspicion, not a match.
 ```
 
+## The single-finding issue
+
+When the user confirms exactly one scan finding, no tracking parent is created,
+so the one issue carries the provenance the parent would have held. Its body is
+exactly this, in this order:
+
+```markdown
+## Scan provenance
+
+<the report's identity header, scope line and per-axis not-covered declarations, verbatim>
+
+<the absolute path of the saved report, labelled as a git-ignored local file that is not version-controlled>
+
+## What to build
+
+<the finding, in the scan's own words and at the location it named>
+
+## Acceptance criteria and test names
+
+<the scan-path not-buildable statement, exactly>
+
+## Notes
+
+<load-bearing context; omit this heading entirely when there is none>
+```
+
+The provenance is transcribed from the report, like the tracking parent's body.
+The title names the finding, as any scan ticket's does — not
+`Codebase scan: …`, which is the tracking parent's title and describes a
+container this issue is not.
+
 ## Rendering contract
 
 Before publication, every preview and final issue body must satisfy all of these:
 
+- Nothing precedes `## What to build`, except the single-finding issue's
+  `## Scan provenance` section, which comes first and holds only the report's
+  provenance and saved-report path.
 - `## What to build` appears once and contains the observable end-to-end result.
 - `## Acceptance criteria and test names` appears once and contains only exact
   criterion/test-name pairs from the spec, with any detail lines under them, or one of the two exact not-buildable
@@ -157,7 +194,8 @@ Before publication, every preview and final issue body must satisfy all of these
 - `## Notes`, when present, comes last and contains only load-bearing context.
 - No template instructions, placeholder text, parent prose, blocker prose,
   labels, status or implementation checklist appears in the body, and no file
-  path except a scan ticket's own location, carried with its revision.
+  path except a scan ticket's own location, carried with its revision, and the
+  saved-report path in a single-finding issue's provenance.
 - The body read back from GitHub is byte-identical to the scratch file it was
   published from, confirmed with `diff` rather than by reading it.
 
