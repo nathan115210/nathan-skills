@@ -28,6 +28,23 @@ checks apply even when the issue has no parent. Failed or incomplete graph reads
 stop implementation. A spec with existing sub-issues requires choosing an
 implementation ticket rather than repeating the parent's work.
 
+Before creating the worktree, `dev` also checks the repository's open pull
+requests, drafts included, for work the issue graph does not show. It only
+reads them. An open PR that changes files this task is expected to touch is
+named with those files in a message before the worktree is created, and work
+continues. An open PR that looks like a dependency stops the run with one
+question: wait for it, stack this task on its head commit, or start as normal.
+A PR counts as a dependency only when it closes a closed native blocker of this
+ticket, or when it adds or changes a file the ticket requires that is missing
+from the starting commit. An open blocker still stops the run whatever PR
+closes it, and none of the three choices overrides it. Stacking happens only
+when you choose it, and a PR that moved since the query is confirmed with you
+again first. The handoff repeats the start-time result, then queries the PRs
+again and reports only those overlapping the actual diff; on a resume that is
+the branch's whole change since its original starting commit. A failed or truncated
+query is reported as an incomplete check, not as "no open PRs", and does not
+stop the run.
+
 ## What you get
 
 A task worktree containing production changes, the necessary tests and a report
@@ -102,6 +119,8 @@ not pretend a missing project-required protection exists.
 - It skips dependency checks because the issue has no parent, or implements a
   split spec as though it had no child tickets.
 - It silently ignores your requested starting commit when reusing a branch.
+- It says there are no open PRs when the PR query failed, stops on overlap in
+  shared files such as the README, or stacks on a PR you did not choose.
 - It calls an approved intermediate failure passed, or treats an unrelated
   regression as covered by the migration exception.
 - It tests a committed revision while handing you materially different WIP.
@@ -126,6 +145,10 @@ not a success claim or an attempt against production.
 - Standalone-issue blockers, already-split spec rejection, explicit-start conflicts
   on reuse and approved intermediate-failure classification have been statically
   reviewed but not runtime-verified.
+- The open-PR check (overlap warning, dependency stop and its three choices,
+  handoff re-query, incomplete-check reporting) is untested in agy, Claude Code
+  and Codex. It cannot see local branches without a PR or uncommitted work, and
+  it misses a dependency the ticket does not name as a required file or symbol.
 - The optional coordinator/developer contract has not been runtime-verified.
   No native agent adapter ships with this skill; effective tools and isolation
   depend on the runtime and project configuration.

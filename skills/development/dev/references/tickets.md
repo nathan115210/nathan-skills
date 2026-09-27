@@ -76,3 +76,67 @@ run and failing recorded as failed. Use the approved intermediate-state exceptio
 and completion rules in [verification](verification.md) to classify the result.
 A failure not covered by that exception remains an introduced failure to resolve,
 not an expected intermediate result.
+
+## Check in-flight pull requests
+
+Work in flight may not appear in the issue graph. After reading the graph and
+before creating the worktree, list the repository's open pull requests, drafts
+included, read-only:
+
+```text
+gh pr list --repo OWNER/REPO --state open --limit 200 --json number,title,isDraft,headRefName,headRefOid,isCrossRepository,changedFiles,files,closingIssuesReferences
+```
+
+Skip this task's own PR: one from this repository whose head branch is the
+task branch, as on a resume or review-fix run. A result as long as the limit may be truncated; raise
+the limit or treat the check as incomplete. `files` is capped (100 per PR in
+`gh` 2.80): when it lists fewer paths than `changedFiles`, that PR's overlap is
+incomplete, not clean. Local branches without a PR, other worktrees and
+uncommitted work are not enumerated.
+
+Classify each remaining PR:
+
+- **Suspected dependency** when (a) an issue in its `closingIssuesReferences`
+  is a closed native `blocked_by` blocker of this ticket, or (b) a file or
+  symbol the ticket or spec requires is absent from the starting commit and
+  the PR's `files` add or modify that file. Only on a (b) match, read that PR's
+  diff for the matched file to confirm. Read no other PR diff.
+- **File overlap** when its `files` include a file this task is expected to
+  touch, shared files such as README or changelogs included.
+- Anything else is not reported.
+
+Before creating the worktree, send the result to the user as a visible message,
+not only in reasoning, then continue without waiting. Name each overlapping PR
+with its overlapping files. A clean check is one line: "N open PRs checked, no
+overlap". If the query fails or is incomplete, state "in-flight PR check
+incomplete: REASON" there and at handoff, then continue; never report it as "no
+open PRs". A failed
+native-graph read still stops implementation, as above. So does an open native
+blocker, whatever PR closes it; the choices below never override it.
+
+On a suspected dependency, stop before creating the worktree. Name the PR and
+the blocker or missing file, and ask one question with three choices:
+
+1. **Wait**: do not start. Report `blocked`, naming the PR.
+2. **Stack**: start the task branch from the PR's head commit as an explicit
+   start ref under [worktree lifecycle](worktrees.md). Only after this choice,
+   fetch the commit if absent from the remote that points at OWNER/REPO
+   (`git fetch REMOTE pull/NUMBER/head` also serves a fork PR) and confirm it
+   equals `headRefOid`. If it differs, the PR changed since the query: report
+   both commits and ask again before creating the worktree. Record the
+   confirmed commit as the starting commit. The handoff states that the PR
+   must merge first, or the branch be rebased or retargeted afterwards.
+3. **Start as normal**: use the usual start commit. The handoff names the PR
+   and the missing contract.
+
+Never stack unless the user chooses it, and never merge the PR's branch.
+
+At handoff, first repeat the start-time result as one "At start:" line, since
+a runtime may show only the final message. Then re-run the query instead of
+reusing the start result, since PRs may open or merge during the session.
+Compare the actual diff's file list with each open PR's `files` and report
+every overlap by PR number and files. On a resume, the actual diff is the task
+branch's whole change since its original starting commit, committed and
+uncommitted, not only this session's edits. Apply the same exclusions and
+incomplete-check rules. List no PR without overlap; a clean result is the same
+one line. Do not comment on, label or otherwise change any PR or issue.
