@@ -25,6 +25,10 @@ unsplit spec issue can itself be the task if buildable in one session. Preserve 
 observes behavior. Do not invent acceptance criteria, test names or seams to
 repair an unbuildable ticket. Combined Behavior stays on the parent; report its
 integration obligations instead of copying or allocating them to this slice.
+Before creating the worktree, check the repository's open pull requests
+read-only as ticket readiness describes: report file overlap and continue, but
+stop on a suspected dependency and ask whether to wait, stack on it or start
+as normal.
 
 Read applicable project instructions, affected source and relevant designs or
 prototypes. Check current prerequisites; an old setup report is not proof they
@@ -113,6 +117,9 @@ Return:
 - Input identity, implemented behavior, unresolved criteria and deviations.
 - Absolute worktree path, branch, starting commit and current HEAD; staging state.
 - Actual checks, coverage and outcomes, including deferred or unavailable checks.
+- The start-time open-PR result, then overlap between the actual diff and
+  freshly re-queried open pull requests, per ticket readiness, or why either
+  check is incomplete.
 - Changed file links and the remaining review or verification action.
 
 Keep full logs and generated evidence in a temporary directory or Downloads
